@@ -1,0 +1,81 @@
+basePath: /api/v1
+definitions:
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:3003
+info:
+  contact: {}
+  description: A streaming service API using Go and Gin framework, with Swagger documentation
+    and ffmpeg integration.
+  title: Go Streaming Service API
+  version: "1.0"
+paths:
+  /users/:
+    post:
+      consumes:
+      - application/json
+      description: Save user in Db
+      parameters:
+      - description: User object containing all user details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Create a new user
+      tags:
+      - users
+  /users/{UserId}:
+    delete:
+      description: Delete user by ID ni Db
+      parameters:
+      - description: User ID
+        in: path
+        name: Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Delete user by ID
+      tags:
+      - users
+    get:
+      description: Search user by ID in Db
+      parameters:
+      - description: User ID
+        in: path
+        name: Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Get user by ID
+      tags:
+      - users
+swagger: "2.0"
