@@ -7,10 +7,8 @@ import (
 
 // SetupRoutes configura todas las rutas
 func SetupRoutes(router *gin.RouterGroup, userController controllers.UserController, authController controllers.AuthController) {
-	api := router.Group("/api/v1")
-
 	// Rutas de usuarios
-	userRoutes := api.Group("/users")
+	userRoutes := router.Group("/users")
 	{
 		userRoutes.GET("/:id", userController.GetUserByID)
 		userRoutes.POST("/", userController.CreateUser)
@@ -18,7 +16,7 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 	}
 
 	// Rutas de autenticación
-	authRoutes := api.Group("/auth")
+	authRoutes := router.Group("/auth")
 	{
 		authRoutes.POST("/login", authController.Login)
 		authRoutes.POST("/register", authController.Register)
