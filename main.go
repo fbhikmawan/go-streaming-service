@@ -4,10 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	docs "github.com/unbot2313/go-streaming-service/docs"
-	"github.com/unbot2313/go-streaming-service/internal/controllers"
+	_ "github.com/unbot2313/go-streaming-service/docs"
+	"github.com/unbot2313/go-streaming-service/internal/app"
 	"github.com/unbot2313/go-streaming-service/internal/routes"
-	"github.com/unbot2313/go-streaming-service/internal/services"
 )
 
 // @title Go Streaming Service API
@@ -21,18 +20,15 @@ func main() {
 
 	r := gin.Default()
 
-	docs.SwaggerInfo.BasePath = "/api/v1"
-
 	apiGroup := r.Group("/api")
 
 	v1Group := apiGroup.Group("/v1")
 
-	service := services.NewUserService()
+	// Inicializar los componentes de la aplicación
+	userController, authController := app.InitializeComponents()
 
-	controller := controllers.NewUserController(service)
-
-	routes.SetupRoutes(v1Group, controller)
-
+	// Configurar las rutas
+	routes.SetupRoutes(v1Group, userController, authController)
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 
