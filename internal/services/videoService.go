@@ -53,10 +53,10 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 	}
 
 	videoData := &models.Video{
-		Title:       title,
-		Description: description,
-		Video: 	 header.Filename,
-		Path: 	 savePath,
+		Title:    		title,
+		Description:	description,
+		Video: 	 		header.Filename,
+		Path: 	 		savePath,
 	}
 
 	return videoData, nil
