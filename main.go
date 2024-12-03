@@ -25,10 +25,10 @@ func main() {
 	v1Group := apiGroup.Group("/v1")
 
 	// Inicializar los componentes de la aplicación
-	userController, authController := app.InitializeComponents()
+	userController, authController, videoController := app.InitializeComponents()
 
 	// Configurar las rutas
-	routes.SetupRoutes(v1Group, userController, authController)
+	routes.SetupRoutes(v1Group, userController, authController, videoController)
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 

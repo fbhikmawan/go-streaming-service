@@ -6,7 +6,7 @@ import (
 )
 
 // InitializeComponents crea las instancias de los servicios y controladores
-func InitializeComponents() (controllers.UserController, controllers.AuthController) {
+func InitializeComponents() (controllers.UserController, controllers.AuthController, controllers.VideoController) {
 	// Inicializa los servicios
 	userService := services.NewUserService()
 	authService := services.NewAuthService()
@@ -15,5 +15,10 @@ func InitializeComponents() (controllers.UserController, controllers.AuthControl
 	userController := controllers.NewUserController(userService)
 	authController := controllers.NewAuthController(authService)
 
-	return userController, authController
+	// Inicializa el controlador de videos
+	videoService := services.NewVideoService()
+	videoController := controllers.NewVideoController(videoService)
+
+
+	return userController, authController, videoController
 }

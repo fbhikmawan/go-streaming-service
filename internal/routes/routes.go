@@ -6,7 +6,7 @@ import (
 )
 
 // SetupRoutes configura todas las rutas
-func SetupRoutes(router *gin.RouterGroup, userController controllers.UserController, authController controllers.AuthController) {
+func SetupRoutes(router *gin.RouterGroup, userController controllers.UserController, authController controllers.AuthController, videoController controllers.VideoController) {
 	// Rutas de usuarios
 	userRoutes := router.Group("/users")
 	{
@@ -21,4 +21,10 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 		authRoutes.POST("/login", authController.Login)
 		authRoutes.POST("/register", authController.Register)
 	}
+
+    VideoRoutes := router.Group("/videos")
+    {
+        VideoRoutes.GET("/", videoController.GetVideos)
+        VideoRoutes.POST("/", videoController.CreateVideo)
+    }
 }
