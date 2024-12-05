@@ -1,3 +1,5 @@
 tmp/
 .env
 videos/
+public/
+frontend/
