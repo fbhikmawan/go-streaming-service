@@ -12,6 +12,10 @@ type Config struct {
 	Port         string
 	DatabaseURL  string
 	JWTSecretKey string
+	AWSRegion	 string
+	AWSBucketName string
+	AWSAccessKey string
+	AWSSecretKey string
 }
 
 
@@ -37,6 +41,10 @@ func GetConfig() *Config {
 			Port:         getEnv("PORT", "8080"),
 			DatabaseURL:  getEnv("DATABASE_URL", "postgres://localhost:5432/mydb"),
 			JWTSecretKey: getEnv("JWT_SECRET_KEY", "secretJwtKey"),
+			AWSRegion:    getEnv("AWS_REGION", ""),
+			AWSBucketName: getEnv("AWS_BUCKET_NAME", ""),
+			AWSAccessKey: getEnv("AWS_ACCESS_KEY_ID", ""),
+			AWSSecretKey: getEnv("AWS_SECRET_ACCESS_KEY", ""),
 		}
 	})
 
