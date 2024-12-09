@@ -31,7 +31,7 @@ func main() {
 	// Servir archivos staticos (STREAMING)
 	// cuando se accede a la ruta /static, se sirven los archivos que estan en la carpeta public,
 	// ejm: http://localhost:3003/static/index.html, se sirve /public/index.html
-	v1Group.Static("/static", "./public")
+	v1Group.Static("/static", "./static/temp")
 
 
 	// Inicializar los componentes de la aplicación

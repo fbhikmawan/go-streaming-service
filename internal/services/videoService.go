@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/unbot2313/go-streaming-service/config"
 	"github.com/unbot2313/go-streaming-service/internal/models"
 )
 
@@ -32,6 +33,8 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 		return nil, err
 	}
 
+	config := config.GetConfig()
+
 	// 1. Obtener los campos de texto del formulario
 	title := c.PostForm("title")
 	description := c.PostForm("description")
@@ -43,7 +46,7 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 		return nil, fmt.Errorf("error al obtener el archivo: %w", err)
 	}
 
-	storagePath := "videos"
+	storagePath := config.LocalStoragePath
 	uniqueName := fmt.Sprintf("%s_%s", uuid.New().String(), header.Filename)
 
 	// Guardar el archivo directamente con Gin

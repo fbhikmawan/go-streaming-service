@@ -1,5 +1,6 @@
 tmp/
 .env
+static/
 videos/
 public/
 frontend/
