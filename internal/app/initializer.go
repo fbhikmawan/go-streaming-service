@@ -6,7 +6,7 @@ import (
 )
 
 // InitializeComponents crea las instancias de los servicios y controladores
-func InitializeComponents() (controllers.UserController, controllers.AuthController, controllers.VideoController) {
+func InitializeComponents() (controllers.UserController, controllers.AuthController, controllers.VideoController, controllers.S3Controller) {
 	// Inicializa los servicios
 	userService := services.NewUserService()
 	authService := services.NewAuthService()
@@ -19,6 +19,11 @@ func InitializeComponents() (controllers.UserController, controllers.AuthControl
 	videoService := services.NewVideoService()
 	videoController := controllers.NewVideoController(videoService)
 
+	// Inicializa el controlador de S3
+	s3Configuration := services.GetS3Configuration()
+	s3Service := services.NewS3Service(s3Configuration)
+	s3Controller := controllers.NewS3Controller(s3Service)
 
-	return userController, authController, videoController
+
+	return userController, authController, videoController, s3Controller
 }

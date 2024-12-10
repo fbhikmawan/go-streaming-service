@@ -33,12 +33,11 @@ func main() {
 	// ejm: http://localhost:3003/static/index.html, se sirve /public/index.html
 	v1Group.Static("/static", "./static/temp")
 
-
 	// Inicializar los componentes de la aplicación
-	userController, authController, videoController := app.InitializeComponents()
+	userController, authController, videoController, S3Service := app.InitializeComponents()
 
 	// Configurar las rutas
-	routes.SetupRoutes(v1Group, userController, authController, videoController)
+	routes.SetupRoutes(v1Group, userController, authController, videoController, S3Service)
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 

@@ -19,11 +19,11 @@ type S3Configuration struct {
 	Uploader *manager.Uploader
 }
 
-func GetS3Configuration() *S3Configuration {
+func GetS3Configuration() S3Configuration {
 
 	Config := config.GetConfig()
 
-	return &S3Configuration{
+	return S3Configuration{
 		Region: Config.AWSRegion,
 		BucketName: Config.AWSBucketName,
 		AccessKey: Config.AWSAccessKey,
@@ -77,7 +77,7 @@ func (s3Service *S3ServiceImp) UploadFilesFromFolderToS3(folder string) ([]strin
 			Bucket: aws.String(s3Service.configuration.BucketName),
 			Key:    aws.String(key),
 			Body:   f,
-			ACL:    "public-read",
+			// ACL:    "public-read",
 		})
 
 		if errS3 != nil {
