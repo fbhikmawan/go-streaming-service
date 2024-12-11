@@ -60,14 +60,16 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 	}
 
 	// subir el video a s3
+	// y elimina la carpeta local con los archivos .ts y .m3u8
 	savedDataInS3, err := vc.videoService.UploadFilesFromFolderToS3(filesPath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// borrar archivos locales .mp3 y la carpeta con los archivos .ts y .m3u8
+	// borrar archivos locales .mp3
 	// pendiente
+	
 
 	// finalmente, guardar la url del video en la base de datos
 	// pendiente
