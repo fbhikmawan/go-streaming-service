@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	rawVideoPathFromWSL = "static/videos/"
-	saveFormatedVideoPath = "static/temp/"
+	rawVideoPathFromWSL = "./static/videos/"
+	saveFormatedVideoPath = "./static/temp/"
 )
 
 type videoServiceImp struct{}
@@ -91,12 +91,11 @@ func (vs *videoServiceImp) FormatVideo(VideoName string) error {
 		return fmt.Errorf("error al crear la carpeta: %w", err)
 	}
 
-	saveFormatedPath := saveFormatedVideoPath + VideoName + "/output.m3u8"
+	saveFormatedPath := saveFormatedVideoPath + stringName[0] + "/output.m3u8"
 
-	fmt.Println(saveFormatedPath)
-	fmt.Println(rawVideoPathFromWSL + VideoName)
+	videoPath := rawVideoPathFromWSL + VideoName
 
-	cmd := exec.Command("ffmpeg", "-i", rawVideoPathFromWSL + VideoName, "-c", "copy", "-start_number", "0", "-hls_time", "10", "-hls_list_size", "0", "-f", "hls", saveFormatedPath)
+	cmd := exec.Command("ffmpeg", "-i", videoPath, "-c", "copy", "-start_number", "0", "-hls_time", "10", "-hls_list_size", "0", "-f", "hls", saveFormatedPath)
 
 	err = cmd.Run()
 	if err != nil {
