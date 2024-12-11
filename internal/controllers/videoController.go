@@ -15,7 +15,7 @@ type VideoController interface {
 
 // SaveVideo		godoc
 // @Summary 		Save a video
-// @Description 	Upload a video file along with metadata (title and description) and save it to the server.
+// @Description 	Upload a video file along with metadata (title and description) and save it to the AWS bucket.
 // @Tags 			streaming
 // @Produce 		json
 // @Success 		200 {object} models.Video
@@ -29,7 +29,7 @@ func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
 
 // SaveVideo		godoc
 // @Summary 		Save a video
-// @Description 	Upload a video file along with metadata (title and description) and save it to the server.
+// @Description 	Upload a video file along with metadata (title and description) and save to the AWS bucket.
 // @Tags 			streaming
 // @Accept 			multipart/form-data
 // @Produce 		json
@@ -39,23 +39,40 @@ func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
 // @Success 		200 {object} models.Video
 // @Failure 		400 {object} map[string]string
 // @Failure 		500 {object} map[string]string
-// @Router 			/streaming/ [post]
+// @Router 			/streaming/upload [post]
 func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 
+	// guardar archivo en local
 	videoData, err := vc.videoService.SaveVideo(c)
-
-	// comprimir el video
-
-	// usar un servicio que pase ese video con ffmpeg
-
-	// usar el servicio de s3, subir el video a s3
-
-	// finalmente, guardar la url del video en la base de datos
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// comprimir el video
+	// pendiente
+
+	//pasar a archivos .ts y .m3u8 con ffmpeg y guardarlo en local
+	filesPath ,err := vc.videoService.FormatVideo(videoData.UniqueName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// subir el video a s3
+	savedDataInS3, err := vc.videoService.UploadFilesFromFolderToS3(filesPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// borrar archivos locales .mp3 y la carpeta con los archivos .ts y .m3u8
+	// pendiente
+
+	// finalmente, guardar la url del video en la base de datos
+	// pendiente
+
+	videoData.S3FilesPath = savedDataInS3
 
 	c.JSON(http.StatusOK, videoData)
 

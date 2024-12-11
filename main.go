@@ -34,10 +34,10 @@ func main() {
 	v1Group.Static("/static", "./static/temp")
 
 	// Inicializar los componentes de la aplicación
-	userController, authController, videoController, S3Service := app.InitializeComponents()
+	userController, authController, videoController := app.InitializeComponents()
 
 	// Configurar las rutas
-	routes.SetupRoutes(v1Group, userController, authController, videoController, S3Service)
+	routes.SetupRoutes(v1Group, userController, authController, videoController)
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 

@@ -6,7 +6,7 @@ import (
 )
 
 // SetupRoutes configura todas las rutas
-func SetupRoutes(router *gin.RouterGroup, userController controllers.UserController, authController controllers.AuthController, videoController controllers.VideoController, s3Service controllers.S3Controller) {
+func SetupRoutes(router *gin.RouterGroup, userController controllers.UserController, authController controllers.AuthController, videoController controllers.VideoController) {
 	// Rutas de usuarios
 	userRoutes := router.Group("/users")
 	{
@@ -25,8 +25,7 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
     VideoRoutes := router.Group("/streaming")
     {
         VideoRoutes.GET("/", videoController.GetVideos)
-        VideoRoutes.POST("/", videoController.CreateVideo)
-		VideoRoutes.POST("/upload", s3Service.UploadVideos)
+        VideoRoutes.POST("/upload", videoController.CreateVideo)
     }
 	
 }

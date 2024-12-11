@@ -1,5 +1,7 @@
 package services
 
+// extension del videoService centrada en el manejo de archivos en S3
+
 import (
 	"context"
 	"os"
@@ -32,19 +34,7 @@ func GetS3Configuration() S3Configuration {
 	}
 }
 
-type S3ServiceImp struct {
-	configuration S3Configuration
-}
-
-type S3Service interface {
-	UploadFilesFromFolderToS3(folder string) ([]string, error)
-}
-
-func NewS3Service(configuration S3Configuration) S3Service {
-	return &S3ServiceImp{configuration: configuration}
-}
-
-func (s3Service *S3ServiceImp) UploadFilesFromFolderToS3(folder string) ([]string, error) {
+func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) ([]string, error) {
 
 	// Obtener el nombre de la carpeta actual
 	baseFolder := filepath.Base(folder)
@@ -73,8 +63,8 @@ func (s3Service *S3ServiceImp) UploadFilesFromFolderToS3(folder string) ([]strin
 		key := filepath.Join(baseFolder, file.Name())
 
 		// Subir el archivo a S3
-		result, errS3 := s3Service.configuration.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
-			Bucket: aws.String(s3Service.configuration.BucketName),
+		result, errS3 := s3Service.S3configuration.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String(s3Service.S3configuration.BucketName),
 			Key:    aws.String(key),
 			Body:   f,
 			// ACL:    "public-read",

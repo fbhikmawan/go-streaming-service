@@ -19,18 +19,21 @@ var (
 	saveFormatedVideoPath = "./static/temp/"
 )
 
-type videoServiceImp struct{}
+type videoServiceImp struct{
+	S3configuration S3Configuration
+}
 
 type VideoService interface {
 	GetVideos()
 	SaveVideo(c *gin.Context) (*models.Video, error)
-	FormatVideo(videoName string) error 
+	FormatVideo(videoName string) (string, error) 
 	ensureDir(dirName string) error
+	UploadFilesFromFolderToS3(folder string) ([]string, error)
 
 }
 
-func NewVideoService() VideoService {
-	return &videoServiceImp{}
+func NewVideoService(S3Configuration S3Configuration) VideoService {
+	return &videoServiceImp{S3configuration: S3Configuration}
 }
 
 func (vs *videoServiceImp) GetVideos() {
@@ -68,41 +71,41 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 		Title:    		title,
 		Description:	description,
 		Video: 	 		header.Filename,
-		Path: 	 		savePath,
-	}
-
-	//pasar a archivos .ts y .m3u8 con ffmpeg
-	err = vs.FormatVideo(uniqueName)
-	if err != nil {
-		return nil, fmt.Errorf("error al formatear el video: %w", err)
+		LocalPath: 	 	savePath,
+		UniqueName: 	uniqueName,
 	}
 
 	return videoData, nil
 
 }
 
-func (vs *videoServiceImp) FormatVideo(VideoName string) error {
+func (vs *videoServiceImp) FormatVideo(VideoName string) (string, error) {
 
+	//obtener el nombre del video sin la extensión
 	stringName := strings.Split(VideoName, ".")
 
+	//crear la carpeta donde se guardará el video formateado
 	err := createFolder("static/temp/" + stringName[0])
 
 	if err != nil {
-		return fmt.Errorf("error al crear la carpeta: %w", err)
+		return "", fmt.Errorf("error al crear la carpeta: %w", err)
 	}
 
 	saveFormatedPath := saveFormatedVideoPath + stringName[0] + "/output.m3u8"
 
 	videoPath := rawVideoPathFromWSL + VideoName
 
+	// ejecutar el comando ffmpeg para fragmentar el video y guardarlo en la carpeta ya creada para despues subirlo a s3
 	cmd := exec.Command("ffmpeg", "-i", videoPath, "-c", "copy", "-start_number", "0", "-hls_time", "10", "-hls_list_size", "0", "-f", "hls", saveFormatedPath)
 
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("error al ejecutar el comando ffmpeg: %w", err)
+		return "", fmt.Errorf("error al ejecutar el comando ffmpeg: %w", err)
 	}
+
+	ffmpegFilesPath := saveFormatedVideoPath + stringName[0]
 	
-	return nil
+	return ffmpegFilesPath, nil
 
 }
 

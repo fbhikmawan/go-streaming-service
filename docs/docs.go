@@ -15,62 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/s3/upload": {
-            "post": {
-                "description": "Upload a video file to an S3 bucket.",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "s3"
-                ],
-                "summary": "Upload a video to S3",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "Video File",
-                        "name": "video",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/streaming/": {
             "get": {
-                "description": "Upload a video file along with metadata (title and description) and save it to the server.",
+                "description": "Upload a video file along with metadata (title and description) and save it to the AWS bucket.",
                 "produces": [
                     "application/json"
                 ],
@@ -104,9 +51,11 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/streaming/upload": {
             "post": {
-                "description": "Upload a video file along with metadata (title and description) and save it to the server.",
+                "description": "Upload a video file along with metadata (title and description) and save to the AWS bucket.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -285,10 +234,19 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "path": {
+                "localPath": {
                     "type": "string"
                 },
+                "s3FilesPath": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "title": {
+                    "type": "string"
+                },
+                "uniqueName": {
                     "type": "string"
                 },
                 "video": {
