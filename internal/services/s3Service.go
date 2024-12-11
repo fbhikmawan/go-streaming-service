@@ -89,7 +89,10 @@ func (s3Service *S3ServiceImp) UploadFilesFromFolderToS3(folder string) ([]strin
 	}
 
 	//borrar la carpeta tras subir los archivos
-	os.RemoveAll(folder)
+	err = os.RemoveAll(folder)
+	if err != nil {
+		return nil, err
+	}
 	
 	return uploadedFiles, nil
 }

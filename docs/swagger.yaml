@@ -32,6 +32,109 @@ info:
   title: Go Streaming Service API
   version: "1.0"
 paths:
+  /s3/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a video file to an S3 bucket.
+      parameters:
+      - description: Video File
+        in: formData
+        name: video
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload a video to S3
+      tags:
+      - s3
+  /streaming/:
+    get:
+      description: Upload a video file along with metadata (title and description)
+        and save it to the server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Video'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Save a video
+      tags:
+      - streaming
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a video file along with metadata (title and description)
+        and save it to the server.
+      parameters:
+      - description: Video Title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Video Description
+        in: formData
+        name: description
+        type: string
+      - description: Video File
+        in: formData
+        name: video
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Video'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Save a video
+      tags:
+      - streaming
   /users/:
     post:
       consumes:
@@ -91,72 +194,4 @@ paths:
       summary: Get user by ID
       tags:
       - users
-  /videos/:
-    get:
-      description: Upload a video file along with metadata (title and description)
-        and save it to the server.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Video'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Save a video
-      tags:
-      - videos
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload a video file along with metadata (title and description)
-        and save it to the server.
-      parameters:
-      - description: Video Title
-        in: formData
-        name: title
-        required: true
-        type: string
-      - description: Video Description
-        in: formData
-        name: description
-        type: string
-      - description: Video File
-        in: formData
-        name: video
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Video'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Save a video
-      tags:
-      - videos
 swagger: "2.0"

@@ -16,12 +16,12 @@ type VideoController interface {
 // SaveVideo		godoc
 // @Summary 		Save a video
 // @Description 	Upload a video file along with metadata (title and description) and save it to the server.
-// @Tags 			videos
+// @Tags 			streaming
 // @Produce 		json
 // @Success 		200 {object} models.Video
 // @Failure 		400 {object} map[string]string
 // @Failure 		500 {object} map[string]string
-// @Router 			/videos/ [get]
+// @Router 			/streaming/ [get]
 func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
 	vc.videoService.GetVideos()
 	fmt.Println("GetVideos")
@@ -30,7 +30,7 @@ func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
 // SaveVideo		godoc
 // @Summary 		Save a video
 // @Description 	Upload a video file along with metadata (title and description) and save it to the server.
-// @Tags 			videos
+// @Tags 			streaming
 // @Accept 			multipart/form-data
 // @Produce 		json
 // @Param 			title formData string true "Video Title"
@@ -39,10 +39,18 @@ func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
 // @Success 		200 {object} models.Video
 // @Failure 		400 {object} map[string]string
 // @Failure 		500 {object} map[string]string
-// @Router 			/videos/ [post]
+// @Router 			/streaming/ [post]
 func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 
 	videoData, err := vc.videoService.SaveVideo(c)
+
+	// comprimir el video
+
+	// usar un servicio que pase ese video con ffmpeg
+
+	// usar el servicio de s3, subir el video a s3
+
+	// finalmente, guardar la url del video en la base de datos
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -50,7 +58,6 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, videoData)
-	
 
 }
 
