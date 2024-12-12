@@ -1,6 +1,6 @@
-tmp/
 .env
 static/
-videos/
-public/
 frontend/
+
+.log
+*.log

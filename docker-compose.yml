@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15 # Versiond de imagen
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432" # Puerto
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistencia de datos
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_streaming_service
+    env_file:
+      - .env
+    ports:
+      - "3003:${PORT}"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    command: ["go", "run", "main.go"] # Comando para INICIAR EL SERVIDOR
+
+volumes:
+  postgres_data:
