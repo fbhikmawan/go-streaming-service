@@ -1,8 +1,69 @@
-\*\* Para recargar la documentacion usar `swag init` en consola
+# How to start the proyect
 
-// comando para usar ffmpeg
-// `wsl ffmpeg -i /mnt/c/Users/tomas/Desktop/GithubProyects/UnbotProyects/linklnProyects/go-streaing-service/static/videos/f82d2203-6b07-498f-8da5-1118df768aec_badApple.mp4 \
--c copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls /mnt/c/Users/tomas/Desktop/GithubProyects/UnbotProyects/linklnProyects/go-streaing-service/static/videos/output.m3u8
-`
+Este es un proyecto de servicio de streaming construído en Go. Permite transmitir contenido multimedia utilizando AWS para la gestión de archivos y PostgreSQL para manejar la información de usuarios y videos. Además, soporta Docker para facilitar su despliegue en entornos locales y de producción.
 
-// COMPRIMIR LOS VIDEOS
+## Tech Stack
+
+**Client:** React, Redux, TailwindCSS
+
+**Server:** Node, Express
+
+## Requerimientos
+
+Para utilizar este proyecto, necesitas:
+
+### Obligatorios
+
+- **Git**: Para clonar el repositorio.
+- **Go**: Para ejecutar y compilar el proyecto. (Versión recomendada: 1.23.1, utilizada en el `go.mod`).
+
+### Opcionales
+
+- **Docker**: Para contenerizar la aplicación.
+- **Docker Compose**: Para orquestar servicios si se utiliza Docker.
+
+## Installation
+
+```bash
+  git clone https://github.com/Unbot2313/go-streaming-service.git
+  cd go-streaming-service/
+```
+
+## Usage/Examples
+
+Para usarla con Go!:
+
+```bash
+    go mod tidy
+    go run main.go
+```
+
+Con docker(incluye la instancia de postgresql en local):
+
+```bash
+    docker compose up --build
+```
+
+## Contributing
+
+Contributions are always welcome!
+
+Please star a new fork, then make a pull request
+
+In case of change the documentation make that:
+
+```bash
+    go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+    swag init #update the documentation from the swagger
+```
+
+## Features
+
+- Manejar URL de AWS para devolver el contenido
+- Devolver los videos existentes y su contenido
+- Implementar postgresql para guardar usuarios e informacion de los videos
+- RefreshTokens
+-
+- Agregar el middleware de Auth a las rutas de streaming (middleware ya hecho)
+- Terminar el README.md
+- Optimizar el dockerFile
