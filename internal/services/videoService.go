@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -19,21 +18,53 @@ var (
 	saveFormatedVideoPath = "./static/temp/"
 )
 
+var validVideoExtensions = []string{
+	".mp4", ".webm", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".3gp",
+}
+
 type videoServiceImp struct{
 	S3configuration S3Configuration
+	FilesService FilesService
 }
 
 type VideoService interface {
 	GetVideos()
 	SaveVideo(c *gin.Context) (*models.Video, error)
 	FormatVideo(videoName string) (string, error) 
-	ensureDir(dirName string) error
 	UploadFilesFromFolderToS3(folder string) ([]string, error)
-
+	GetFilesService() FilesService // Nuevo método para acceder a FilesService
+	IsValidVideoExtension(c *gin.Context) bool
 }
 
-func NewVideoService(S3Configuration S3Configuration) VideoService {
-	return &videoServiceImp{S3configuration: S3Configuration}
+func NewVideoService(S3Configuration S3Configuration, filesService FilesService) VideoService {
+	return &videoServiceImp{
+		S3configuration: S3Configuration,
+		FilesService: filesService,
+	}
+}
+
+func (vs *videoServiceImp) IsValidVideoExtension(c *gin.Context) bool {
+
+	// Intentar obtener el archivo del request
+	file, err := c.FormFile("video")
+	if err != nil {
+		return false // El archivo no existe o hubo un error
+	}
+
+	// Obtener la extensión del archivo en minúsculas
+	extension := strings.ToLower(filepath.Ext(file.Filename))
+
+	// Verificar si la extensión es válida
+	for _, validExtension := range validVideoExtensions {
+		if validExtension == extension {
+			return true
+		}
+	}
+	return false
+}
+
+func (vs *videoServiceImp) GetFilesService() FilesService {
+	return vs.FilesService
 }
 
 func (vs *videoServiceImp) GetVideos() {
@@ -41,7 +72,7 @@ func (vs *videoServiceImp) GetVideos() {
 }
 
 func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
-	if err := vs.ensureDir("static/videos"); err != nil {
+	if err := vs.FilesService.EnsureDir("static/videos"); err != nil {
 		return nil, err
 	}
 
@@ -85,7 +116,7 @@ func (vs *videoServiceImp) FormatVideo(VideoName string) (string, error) {
 	stringName := strings.Split(VideoName, ".")
 
 	//crear la carpeta donde se guardará el video formateado
-	err := createFolder("static/temp/" + stringName[0])
+	err := vs.FilesService.CreateFolder("static/temp/" + stringName[0])
 
 	if err != nil {
 		return "", fmt.Errorf("error al crear la carpeta: %w", err)
@@ -110,20 +141,3 @@ func (vs *videoServiceImp) FormatVideo(VideoName string) (string, error) {
 }
 
 
-func (vs *videoServiceImp) ensureDir(dirName string) error {
-	err := os.MkdirAll(dirName, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("error al crear directorio: %w", err)
-	}
-
-	return nil
-}
-
-func createFolder(path string) error {
-	// Crea la carpeta y sus carpetas padres si no existen
-	err := os.MkdirAll(path, os.ModePerm) // os.ModePerm otorga permisos de lectura, escritura y ejecución
-	if err != nil {
-		return fmt.Errorf("error al crear la carpeta: %w", err)
-	}
-	return nil
-}

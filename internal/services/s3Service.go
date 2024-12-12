@@ -77,12 +77,6 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) ([]st
 		// Guardar la URL del archivo subido
 		uploadedFiles = append(uploadedFiles, result.Location)
 	}
-
-	//borrar la carpeta tras subir los archivos
-	err = os.RemoveAll(folder)
-	if err != nil {
-		return nil, err
-	}
 	
 	return uploadedFiles, nil
 }

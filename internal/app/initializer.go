@@ -17,7 +17,8 @@ func InitializeComponents() (controllers.UserController, controllers.AuthControl
 
 	// Inicializa el controlador de videos
 	S3configuration := services.GetS3Configuration()
-	videoService := services.NewVideoService(S3configuration)
+	filesService := services.NewFilesService()
+	videoService := services.NewVideoService(S3configuration, filesService)
 	videoController := controllers.NewVideoController(videoService)
 
 

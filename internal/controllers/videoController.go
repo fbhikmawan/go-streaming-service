@@ -42,12 +42,28 @@ func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
 // @Router 			/streaming/upload [post]
 func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 
+	// verificar si el archivo es válido
+	if !vc.videoService.IsValidVideoExtension(c) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El archivo no es un tipo de video válido."})
+		return
+	}
+
+	fileSize := c.Request.ContentLength
+	const maxFileSize = 100 * 1024 * 1024 // 100 MB
+	if fileSize > maxFileSize {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El archivo excede el límite de tamaño permitido."})
+		return
+	}
+
 	// guardar archivo en local
 	videoData, err := vc.videoService.SaveVideo(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// borrar el archivo original
+	defer vc.videoService.GetFilesService().RemoveFile(videoData.LocalPath)
 
 	// comprimir el video
 	// pendiente
@@ -59,16 +75,17 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 		return
 	}
 
+	// borrar archivos locales .ts y .m3u8
+	defer vc.videoService.GetFilesService().RemoveFolder(filesPath)
+
+
+
 	// subir el video a s3
-	// y elimina la carpeta local con los archivos .ts y .m3u8
 	savedDataInS3, err := vc.videoService.UploadFilesFromFolderToS3(filesPath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	// borrar archivos locales .mp3
-	// pendiente
 	
 
 	// finalmente, guardar la url del video en la base de datos
