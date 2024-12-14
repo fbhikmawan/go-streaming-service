@@ -38,6 +38,7 @@ func main() {
 
 	// Configurar las rutas
 	routes.SetupRoutes(v1Group, userController, authController, videoController)
+	// Configurar la documentación de Swagger
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 

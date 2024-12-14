@@ -17,6 +17,12 @@ type Config struct {
 	AWSAccessKey string
 	AWSSecretKey string
 	LocalStoragePath string
+
+	PostgresHost	 string
+	PostgresPort	 string
+	PostgresUser	 string
+	PostgresPassword string
+	PostgresDBName	 string
 }
 
 
@@ -40,13 +46,18 @@ func GetConfig() *Config {
 
 		config = &Config{
 			Port:         getEnv("PORT", "8080"),
-			DatabaseURL:  getEnv("DATABASE_URL", "postgres://localhost:5432/mydb"),
 			JWTSecretKey: getEnv("JWT_SECRET_KEY", "secretJwtKey"),
 			LocalStoragePath: getEnv("LOCAL_STORAGE_PATH", "videos"),
 			AWSRegion:    getEnv("AWS_REGION", ""),
 			AWSBucketName: getEnv("AWS_BUCKET_NAME", ""),
 			AWSAccessKey: getEnv("AWS_ACCESS_KEY_ID", ""),
 			AWSSecretKey: getEnv("AWS_SECRET_ACCESS_KEY", ""),
+
+			PostgresHost: getEnv("POSTGRES_HOST", "localhost"),
+			PostgresPort: getEnv("POSTGRES_PORT", "5432"),
+			PostgresUser: getEnv("POSTGRES_USER", "postgres"),
+			PostgresPassword: getEnv("POSTGRES_PASSWORD", "postgres"),
+			PostgresDBName: getEnv("POSTGRES_DBNAME", "golang"),
 		}
 	})
 
