@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/google/uuid"
 	"github.com/unbot2313/go-streaming-service/config"
 	"github.com/unbot2313/go-streaming-service/internal/models"
 )
@@ -33,6 +34,8 @@ func (service *UserServiceImp) CreateUser(user *models.User) (*models.User, erro
 	if err != nil {
 		return nil, err
 	}
+
+	user.ID = uuid.New().String()
 
 	newUser := db.Create(user)
 
