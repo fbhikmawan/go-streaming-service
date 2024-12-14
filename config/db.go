@@ -14,7 +14,7 @@ var (
 )
 
 // GetDsn genera la cadena de conexión para la base de datos.
-func GetDsn() string {
+func getDsn() string {
 	config := GetConfig()
 	host := config.PostgresHost
 	port := config.PostgresPort
@@ -29,7 +29,7 @@ func GetDsn() string {
 func GetDB() (*gorm.DB, error) {
 	var err error
 	once.Do(func() {
-		dsn := GetDsn()
+		dsn := getDsn()
 		dbInstance, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	})
 	if err != nil {
