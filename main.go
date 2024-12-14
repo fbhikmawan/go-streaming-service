@@ -6,6 +6,7 @@ import (
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/unbot2313/go-streaming-service/config"
 	_ "github.com/unbot2313/go-streaming-service/docs"
 	"github.com/unbot2313/go-streaming-service/internal/app"
 	"github.com/unbot2313/go-streaming-service/internal/routes"
@@ -27,6 +28,12 @@ func main() {
 	apiGroup := r.Group("/api")
 
 	v1Group := apiGroup.Group("/v1")
+
+	// conect to database
+	_, err := config.GetDB()
+	if err != nil {
+		panic(err)
+	}
 
 	// Servir archivos staticos (STREAMING)
 	// cuando se accede a la ruta /static, se sirven los archivos que estan en la carpeta public,

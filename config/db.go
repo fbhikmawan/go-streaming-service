@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/unbot2313/go-streaming-service/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -35,5 +36,19 @@ func GetDB() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Migra las tablas a la base de datos.
+	err = migrations(dbInstance)
+	if err != nil {
+		return nil, err
+	}
 	return dbInstance, nil
+}
+
+func migrations(db *gorm.DB) error {
+	err := db.AutoMigrate(&models.User{}, &models.VideoModel{})
+	if err != nil {
+		return err
+	}
+	return nil
 }

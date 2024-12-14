@@ -65,12 +65,10 @@ func (service *AuthServiceImp) ValidateToken(tokenString string) (*models.User, 
 	// Extraer y validar los claims
 	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
 		// Validar y construir el objeto usuario
-		idFloat, ok := claims["user_id"].(float64)
+		id, ok := claims["user_id"].(string)
 		if !ok {
 			return nil, fmt.Errorf("user_id no es válido")
 		}
-
-		id := int(idFloat) // Convertir a entero
 
 		username, ok := claims["username"].(string)
 		if !ok {

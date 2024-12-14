@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/unbot2313/go-streaming-service/internal/models"
 	"github.com/unbot2313/go-streaming-service/internal/services"
 )
 
@@ -40,12 +41,25 @@ func (controller *UserControllerImp) GetUserByID(c *gin.Context) {
 // @Description 	Save user in Db
 // @Tags 			users
 // @Accept 			json
-// @Param 			user body models.User{} true "User object containing all user details"
+// @Param 			user body models.UserSwagger{} true "User object containing all user details"
 // @Produce 		json
 // @Success 		200 {object} models.User{}
 // @Router 			/users/ [post]
 func (controller *UserControllerImp) CreateUser(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Create User"})
+	var user models.User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	newUser, err := controller.service.CreateUser(&user)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "User created", "user": newUser})
 }
 
 // GetUserByID		godoc
@@ -57,7 +71,15 @@ func (controller *UserControllerImp) CreateUser(c *gin.Context) {
 // @Success 		200 {object} models.User{}
 // @Router 			/users/{UserId} [delete]
 func (controller *UserControllerImp) DeleteUserByID(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Delete User"})
+
+	id := c.Param("Id")
+
+	err := controller.service.DeleteUserByID(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"message": "User deleted"})
 }
 
 
