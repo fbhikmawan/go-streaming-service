@@ -10,6 +10,7 @@ type UserServiceImp struct{}
 
 type UserService interface {
 	GetUserByID(Id string) (*models.User, error)
+	GetUserByUserName(userName string) (*models.User, error)
 	CreateUser(user *models.User) (*models.User, error)
 	DeleteUserByID(Id string) error
 	// Pendiente
@@ -26,6 +27,23 @@ func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
 
 	db.First(&user, Id)
 
+	// Por alguna razon no devuelve el id del usuario
+	return user, nil
+}
+
+func (service *UserServiceImp) GetUserByUserName(userName string) (*models.User, error) {
+	var user *models.User
+	db, err := config.GetDB()
+	if err != nil {
+		return nil, err
+	}
+
+	dbCtx := db.Where("user_name = ?", userName).First(&user)
+
+	if dbCtx.Error != nil {
+		return nil, dbCtx.Error
+	}
+
 	return user, nil
 }
 
@@ -35,7 +53,7 @@ func (service *UserServiceImp) CreateUser(user *models.User) (*models.User, erro
 		return nil, err
 	}
 
-	user.ID = uuid.New().String()
+	user.Id = uuid.New().String()
 
 	newUser := db.Create(user)
 
@@ -47,17 +65,17 @@ func (service *UserServiceImp) CreateUser(user *models.User) (*models.User, erro
 }
 
 func (service *UserServiceImp) DeleteUserByID(Id string) error {
-	var user *models.User
 
 	db, err := config.GetDB()
 	if err != nil {
 		return err
 	}
 
-	userDeleted := db.Delete(user, Id)
-	if userDeleted.Error != nil {
-		return userDeleted.Error
-	}
+	 // Elimina el usuario usando el campo personalizado `Id`
+    userDeleted := db.Where("id = ?", Id).Delete(&models.User{})
+    if userDeleted.Error != nil {
+        return userDeleted.Error
+    }
 
 	return nil
 }

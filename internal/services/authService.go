@@ -29,7 +29,7 @@ func (service *AuthServiceImp) GenerateToken(user models.User) (string, error) {
 
 	//crear token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  user.ID,               // Identificador único del usuario
+		"user_id":  user.Id,               // Identificador único del usuario
 		"username": user.Username,         // Nombre de usuario para referencia
 		"email":    user.Email,            
 		"exp":  time.Now().Add(time.Hour * 24).Unix(),
@@ -81,7 +81,7 @@ func (service *AuthServiceImp) ValidateToken(tokenString string) (*models.User, 
 		}
 
 		user := &models.User{
-			ID:       id,
+			Id:       id,
 			Username: username,
 			Email:    email,
 		}

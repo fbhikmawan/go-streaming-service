@@ -11,6 +11,7 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 	userRoutes := router.Group("/users")
 	{
 		userRoutes.GET("/:id", userController.GetUserByID)
+		userRoutes.GET("/:username", userController.GetUserByUserName)
 		userRoutes.POST("/", userController.CreateUser)
 		userRoutes.DELETE("/:id", userController.DeleteUserByID)
 	}

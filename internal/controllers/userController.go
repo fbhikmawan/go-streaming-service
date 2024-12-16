@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/unbot2313/go-streaming-service/internal/models"
 	"github.com/unbot2313/go-streaming-service/internal/services"
@@ -13,6 +15,7 @@ type UserControllerImp struct {
 type UserController interface {
 	CreateUser(c *gin.Context)
 	GetUserByID(c *gin.Context)
+	GetUserByUserName(c *gin.Context)
 	DeleteUserByID(c *gin.Context)
 }
 
@@ -24,17 +27,38 @@ type UserController interface {
 // @Param 			Id path string true "User ID"
 // @Produce 		json
 // @Success 		200 {object} models.User{}
+// @Failure 		404 {object} map[string]string
+// @Failure 		500 {object} map[string]string
 // @Router 			/users/{UserId} [get]
 func (controller *UserControllerImp) GetUserByID(c *gin.Context) {
-	Id := c.Param("Id")
+	Id := c.Param("id")
 	users, err := controller.service.GetUserByID(Id)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(404, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(200, users)
 }
 
+// GetUserByUserName		godoc
+// @Summary 				Get user by userName
+// @Description 			Search user by userName in Db
+// @Tags 					users
+// @Param 					userName path string true "User Name"
+// @Produce 				json
+// @Success 				200 {object} models.User{}
+// @Failure 				404 {object} map[string]string
+// @Failure 				500 {object} map[string]string
+// @Router 					/users/{userName} [get]
+func (controller *UserControllerImp) GetUserByUserName(c *gin.Context) {
+	userName := c.Param("userName")
+	users, err := controller.service.GetUserByUserName(userName)
+	if err != nil {
+		c.JSON(404, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, users)
+}
 
 // CreateUser		godoc
 // @Summary 		Create a new user
@@ -44,6 +68,8 @@ func (controller *UserControllerImp) GetUserByID(c *gin.Context) {
 // @Param 			user body models.UserSwagger{} true "User object containing all user details"
 // @Produce 		json
 // @Success 		200 {object} models.User{}
+// @Failure 		400 {object} map[string]string
+// @Failure 		500 {object} map[string]string
 // @Router 			/users/ [post]
 func (controller *UserControllerImp) CreateUser(c *gin.Context) {
 	var user models.User
@@ -69,14 +95,16 @@ func (controller *UserControllerImp) CreateUser(c *gin.Context) {
 // @Param 			Id path string true "User ID"
 // @Produce 		json
 // @Success 		200 {object} models.User{}
+// @Failure 		404 {object} map[string]string
+// @Failure 		500 {object} map[string]string
 // @Router 			/users/{UserId} [delete]
 func (controller *UserControllerImp) DeleteUserByID(c *gin.Context) {
 
-	id := c.Param("Id")
+	id := c.Param("id")
 
 	err := controller.service.DeleteUserByID(id)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(200, gin.H{"message": "User deleted"})
