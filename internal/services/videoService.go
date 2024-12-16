@@ -28,10 +28,9 @@ type videoServiceImp struct{
 }
 
 type VideoService interface {
-	GetVideos()
 	SaveVideo(c *gin.Context) (*models.Video, error)
 	FormatVideo(videoName string) (string, error) 
-	UploadFilesFromFolderToS3(folder string) ([]string, error)
+	UploadFilesFromFolderToS3(folder string) (string, error)
 	GetFilesService() FilesService // Nuevo método para acceder a FilesService
 	IsValidVideoExtension(c *gin.Context) bool
 }
@@ -65,10 +64,6 @@ func (vs *videoServiceImp) IsValidVideoExtension(c *gin.Context) bool {
 
 func (vs *videoServiceImp) GetFilesService() FilesService {
 	return vs.FilesService
-}
-
-func (vs *videoServiceImp) GetVideos() {
-	fmt.Println("GetVideos")
 }
 
 func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
@@ -107,7 +102,6 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 	}
 
 	return videoData, nil
-
 }
 
 func (vs *videoServiceImp) FormatVideo(VideoName string) (string, error) {

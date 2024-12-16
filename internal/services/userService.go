@@ -1,9 +1,12 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/unbot2313/go-streaming-service/config"
 	"github.com/unbot2313/go-streaming-service/internal/models"
+	"gorm.io/gorm"
 )
 
 type UserServiceImp struct{}
@@ -25,7 +28,16 @@ func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
 		return nil, err
 	}
 
-	db.First(&user, Id)
+	dbCtx := db.Preload("Videos").First(&user, Id)
+
+	if dbCtx.Error == gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("user with Id %s not found", Id)
+	}
+
+	if dbCtx.Error != nil {
+		return nil, dbCtx.Error
+	}
+
 
 	// Por alguna razon no devuelve el id del usuario
 	return user, nil
@@ -38,7 +50,11 @@ func (service *UserServiceImp) GetUserByUserName(userName string) (*models.User,
 		return nil, err
 	}
 
-	dbCtx := db.Where("user_name = ?", userName).First(&user)
+	dbCtx := db.Where("user_name = ?", userName).Preload("Videos").First(&user)
+
+	if dbCtx.Error == gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("user with userName %s not found", userName)
+	}
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -54,6 +70,14 @@ func (service *UserServiceImp) CreateUser(user *models.User) (*models.User, erro
 	}
 
 	user.Id = uuid.New().String()
+
+	hashedPassword, err := HashPassword(user.Password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user.Password = hashedPassword
 
 	newUser := db.Create(user)
 

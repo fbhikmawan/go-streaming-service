@@ -7,23 +7,58 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/unbot2313/go-streaming-service/config"
 	"github.com/unbot2313/go-streaming-service/internal/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthServiceImp struct{}
+type AuthServiceImp struct{
+	userService UserService
+}
 
 type AuthService interface {
 
-	GenerateToken(User models.User) (string, error)
-
+	GenerateToken(User *models.User) (string, error)
 	ValidateToken(token string) (*models.User, error)
+	Login(username, password string) (string, error)
 
 }
 
 func NewAuthService() AuthService {
-	return &AuthServiceImp{}
+	return &AuthServiceImp{
+		userService: NewUserService(),
+	}
 }
 
-func (service *AuthServiceImp) GenerateToken(user models.User) (string, error) {
+func (service *AuthServiceImp) Login(username, password string) (string, error) {
+	// Buscar el usuario en la base de datos
+
+	_, err := config.GetDB()
+
+	if err != nil {
+		return "", fmt.Errorf("error al conectar a la base de datos: %v", err)
+	}
+
+	user, err := service.userService.GetUserByUserName(username)
+
+	if err != nil {
+		return "", fmt.Errorf("error al buscar el usuario: %v", err)
+	}
+
+	// Verificar la contraseña
+	if !CheckPasswordHash(password, user.Password) {
+		return "", fmt.Errorf("la contraseña no es válida")
+	}
+
+	// Generar el token
+	token, err := service.GenerateToken(user)
+
+	if err != nil {
+		return "", fmt.Errorf("error al generar el token: %v", err)
+	}
+
+	return token, nil
+}
+
+func (service *AuthServiceImp) GenerateToken(user *models.User) (string, error) {
 
 	SecretToken := []byte(config.GetConfig().JWTSecretKey)
 
@@ -32,7 +67,7 @@ func (service *AuthServiceImp) GenerateToken(user models.User) (string, error) {
 		"user_id":  user.Id,               // Identificador único del usuario
 		"username": user.Username,         // Nombre de usuario para referencia
 		"email":    user.Email,            
-		"exp":  time.Now().Add(time.Hour * 24).Unix(),
+		"exp":  time.Now().Add(time.Hour * 24).Unix(), // Expira en 24 horas
 	})
 
 	//firmar token
@@ -91,6 +126,23 @@ func (service *AuthServiceImp) ValidateToken(tokenString string) (*models.User, 
 
 	// Si el token no es válido o los claims no son correctos
 	return nil, fmt.Errorf("token inválido o claims inválidos")
+}
+
+// Función para hashear una contraseña
+func HashPassword(password string) (string, error) {
+	// Generar el hash de la contraseña con un costo predeterminado (bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("error al generar el hash: %v", err)
+	}
+	return string(hashedPassword), nil
+}
+
+// Función para comparar una contraseña sin hashear con su hash
+func CheckPasswordHash(password, hashedPassword string) bool {
+	// Comparar la contraseña con el hash
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	return err == nil // Devuelve true si no hubo errores
 }
 
 

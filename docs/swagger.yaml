@@ -1,31 +1,55 @@
 basePath: /api/v1
 definitions:
-  models.User:
+  models.UserCreate:
     properties:
       email:
         type: string
       id:
-        type: integer
+        type: string
       password:
         type: string
       username:
         type: string
+    required:
+    - password
+    - username
     type: object
-  models.Video:
+  models.UserLogin:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.UserSwagger:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      password:
+        type: string
+      refresh_token:
+        type: string
+      username:
+        type: string
+      videos:
+        items:
+          $ref: '#/definitions/models.VideoSwagger'
+        type: array
+    type: object
+  models.VideoSwagger:
     properties:
       description:
         type: string
       id:
         type: string
-      localPath:
-        type: string
-      s3FilesPath:
-        items:
-          type: string
-        type: array
       title:
         type: string
-      uniqueName:
+      user_id:
         type: string
       video:
         type: string
@@ -38,6 +62,39 @@ info:
   title: Go Streaming Service API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User object containing all user details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserSwagger'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Log in user
+      tags:
+      - Auth
   /streaming/:
     get:
       description: Upload a video file along with metadata (title and description)
@@ -48,7 +105,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Video'
+            $ref: '#/definitions/models.VideoSwagger'
         "400":
           description: Bad Request
           schema:
@@ -91,7 +148,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Video'
+            $ref: '#/definitions/models.VideoSwagger'
         "400":
           description: Bad Request
           schema:
@@ -118,14 +175,26 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/models.UserCreate'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Create a new user
       tags:
       - users
@@ -144,10 +213,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserSwagger'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Delete user by ID
       tags:
       - users
+  /users/id/{UserId}:
     get:
       description: Search user by ID in Db
       parameters:
@@ -162,8 +244,51 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserSwagger'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Get user by ID
+      tags:
+      - users
+  /users/username/{userName}:
+    get:
+      description: Search user by userName in Db
+      parameters:
+      - description: User Name
+        in: path
+        name: userName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserSwagger'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user by userName
       tags:
       - users
 swagger: "2.0"

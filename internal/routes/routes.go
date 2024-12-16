@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/unbot2313/go-streaming-service/internal/controllers"
+	"github.com/unbot2313/go-streaming-service/internal/middlewares"
 )
 
 // SetupRoutes configura todas las rutas
@@ -10,8 +11,8 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 	// Rutas de usuarios
 	userRoutes := router.Group("/users")
 	{
-		userRoutes.GET("/:id", userController.GetUserByID)
-		userRoutes.GET("/:username", userController.GetUserByUserName)
+		userRoutes.GET("/id/:id", userController.GetUserByID)
+		userRoutes.GET("/username/:username", userController.GetUserByUserName)
 		userRoutes.POST("/", userController.CreateUser)
 		userRoutes.DELETE("/:id", userController.DeleteUserByID)
 	}
@@ -25,8 +26,14 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 
     VideoRoutes := router.Group("/streaming")
     {
-        VideoRoutes.GET("/", videoController.GetVideos)
-        VideoRoutes.POST("/upload", videoController.CreateVideo)
+		ProtectedRoute := VideoRoutes.Group("")
+		ProtectedRoute.Use(middlewares.AuthMiddleware)
+
+		// Rutas públicas
+        VideoRoutes.GET("/", videoController.GetLatestVideos)
+
+		// Ruta protegida
+        ProtectedRoute.POST("/upload", videoController.CreateVideo)
     }
 	
 }

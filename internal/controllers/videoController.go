@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/unbot2313/go-streaming-service/internal/models"
 	"github.com/unbot2313/go-streaming-service/internal/services"
 )
 
 type VideoController interface {
-	GetVideos(c *gin.Context)
+	GetLatestVideos(c *gin.Context)
 	CreateVideo(c *gin.Context)
 }
 
@@ -18,13 +18,19 @@ type VideoController interface {
 // @Description 	Upload a video file along with metadata (title and description) and save it to the AWS bucket.
 // @Tags 			streaming
 // @Produce 		json
-// @Success 		200 {object} models.Video
+// @Success 		200 {object} models.VideoSwagger{}
 // @Failure 		400 {object} map[string]string
 // @Failure 		500 {object} map[string]string
 // @Router 			/streaming/ [get]
-func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
-	vc.videoService.GetVideos()
-	fmt.Println("GetVideos")
+func (vc *VideoControllerImpl) GetLatestVideos(c *gin.Context) {
+	videos, err := vc.databaseVideoService.FindLatestVideos()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, videos)
 }
 
 // SaveVideo		godoc
@@ -36,11 +42,25 @@ func (vc *VideoControllerImpl) GetVideos(c *gin.Context) {
 // @Param 			title formData string true "Video Title"
 // @Param 			description formData string false "Video Description"
 // @Param 			video formData file true "Video File"
-// @Success 		200 {object} models.Video
+// @Success 		200 {object} models.VideoSwagger{}
 // @Failure 		400 {object} map[string]string
 // @Failure 		500 {object} map[string]string
 // @Router 			/streaming/upload [post]
 func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
+
+	// Recuperar el usuario del contexto
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(500, gin.H{"error": "User not found in context"})
+		return
+	}
+
+	// Convertir a tipo User
+	authenticatedUser, ok := user.(*models.User)
+	if !ok {
+		c.JSON(500, gin.H{"error": "Failed to parse user data"})
+		return
+	}
 
 	// verificar si el archivo es válido
 	if !vc.videoService.IsValidVideoExtension(c) {
@@ -86,23 +106,27 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
+	videoData.M3u8FileURL = savedDataInS3
 
 	// finalmente, guardar la url del video en la base de datos
-	// pendiente
+	Video, err := vc.databaseVideoService.CreateVideo(videoData, authenticatedUser.Id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
-	videoData.S3FilesPath = savedDataInS3
-
-	c.JSON(http.StatusOK, videoData)
-
+	c.JSON(http.StatusOK, Video)
 }
 
 type VideoControllerImpl struct {
-	videoService services.VideoService
+	videoService services.VideoService;
+	databaseVideoService services.DatabaseVideoService
 }
 
-func NewVideoController(videoService services.VideoService) VideoController {
+func NewVideoController(videoService services.VideoService, databaseVideoService services.DatabaseVideoService) VideoController {
 	return &VideoControllerImpl{
 		videoService: videoService,
+		databaseVideoService: databaseVideoService,
 	}
 }

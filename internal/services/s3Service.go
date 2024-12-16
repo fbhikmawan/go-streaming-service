@@ -4,8 +4,10 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -34,17 +36,17 @@ func GetS3Configuration() S3Configuration {
 	}
 }
 
-func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) ([]string, error) {
+func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) (string, error) {
 
 	// Obtener el nombre de la carpeta actual
 	baseFolder := filepath.Base(folder)
 
-	var uploadedFiles []string
+	var m3u8FileURL string
 
 	files, err := os.ReadDir(folder)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	for _, file := range files {
@@ -55,7 +57,7 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) ([]st
 		filePath := filepath.Join(folder, file.Name())
 		f, err := os.Open(filePath)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		defer f.Close()
 
@@ -71,12 +73,19 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) ([]st
 		})
 
 		if errS3 != nil {
-			return nil, errS3
+			return "", errS3
 		}
 
-		// Guardar la URL del archivo subido
-		uploadedFiles = append(uploadedFiles, result.Location)
+		 // Si es un archivo m3u8, guarda su URL para la base de datos
+        if strings.HasSuffix(file.Name(), ".m3u8") {
+            m3u8FileURL = result.Location
+        }
+
 	}
+
+	if m3u8FileURL == "" {
+        return "", fmt.Errorf("no se encontró el archivo .m3u8")
+    }
 	
-	return uploadedFiles, nil
+	return m3u8FileURL, nil
 }

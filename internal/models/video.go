@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -11,17 +13,28 @@ type Video struct {
 	Description 	string
 	LocalPath       string
 	UniqueName  	string
-	S3FilesPath  	[]string
+	M3u8FileURL  	string
 
 }
 
-type VideoModel struct {
-	gorm.Model
 
+// Tipo para usar en la documentacion con Swaggo
+// ya que no reconoce los tags de gorm
+type VideoSwagger struct {
+	Id          	string    `json:"id" gorm:"primaryKey;not null;uniqueIndex"`
+	VideoUrl       	string    `json:"video" gorm:"not null"`
+	Title       	string    `json:"title" gorm:"type:varchar(100);not null"`
+	Description 	string    `json:"description"`
+	UserID			string		`json:"user_id" gorm:"not null"`
+}
+
+type VideoModel struct {
 	Id			string		`json:"id" gorm:"primaryKey;not null;unique_index"`
-	Video		string		`json:"video" gorm:"not null"`
+	VideoUrl	string		`json:"video" gorm:"not null"`
 	Title		string		`json:"title" gorm:"type:varchar(100);not null"`
 	Description	string		`json:"description"`
-	UserID		uint		`json:"user_id" gorm:"not null"`
-	
+	UserID		string		`json:"user_id" gorm:"not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }

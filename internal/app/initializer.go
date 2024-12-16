@@ -19,7 +19,8 @@ func InitializeComponents() (controllers.UserController, controllers.AuthControl
 	S3configuration := services.GetS3Configuration()
 	filesService := services.NewFilesService()
 	videoService := services.NewVideoService(S3configuration, filesService)
-	videoController := controllers.NewVideoController(videoService)
+	databaseVideoService := services.NewDatabaseVideoService()
+	videoController := controllers.NewVideoController(videoService, databaseVideoService)
 
 
 	return userController, authController, videoController

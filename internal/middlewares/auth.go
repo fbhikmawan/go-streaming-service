@@ -20,13 +20,17 @@ func AuthMiddleware(c *gin.Context) {
 		return
 	}
 
-	_, err := authService.ValidateToken(token)
+	user, err := authService.ValidateToken(token)
 
 	if err != nil {
 		c.JSON(401, gin.H{"error": err.Error()})
 		c.Abort()
 		return
 	}
+
+	// Guardar el usuario autenticado en el contexto de Gin
+	c.Set("user", user)
+
 
 	c.Next()
 }

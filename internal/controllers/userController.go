@@ -26,10 +26,10 @@ type UserController interface {
 // @Tags 			users
 // @Param 			Id path string true "User ID"
 // @Produce 		json
-// @Success 		200 {object} models.User{}
+// @Success 		200 {object} models.UserSwagger{}
 // @Failure 		404 {object} map[string]string
 // @Failure 		500 {object} map[string]string
-// @Router 			/users/{UserId} [get]
+// @Router 			/users/id/{UserId} [get]
 func (controller *UserControllerImp) GetUserByID(c *gin.Context) {
 	Id := c.Param("id")
 	users, err := controller.service.GetUserByID(Id)
@@ -46,10 +46,10 @@ func (controller *UserControllerImp) GetUserByID(c *gin.Context) {
 // @Tags 					users
 // @Param 					userName path string true "User Name"
 // @Produce 				json
-// @Success 				200 {object} models.User{}
+// @Success 				200 {object} models.UserSwagger{}
 // @Failure 				404 {object} map[string]string
 // @Failure 				500 {object} map[string]string
-// @Router 					/users/{userName} [get]
+// @Router 					/users/username/{userName} [get]
 func (controller *UserControllerImp) GetUserByUserName(c *gin.Context) {
 	userName := c.Param("userName")
 	users, err := controller.service.GetUserByUserName(userName)
@@ -65,9 +65,9 @@ func (controller *UserControllerImp) GetUserByUserName(c *gin.Context) {
 // @Description 	Save user in Db
 // @Tags 			users
 // @Accept 			json
-// @Param 			user body models.UserSwagger{} true "User object containing all user details"
+// @Param 			user body models.UserCreate{} true "User object containing all user details"
 // @Produce 		json
-// @Success 		200 {object} models.User{}
+// @Success 		200 {object} models.UserSwagger{}
 // @Failure 		400 {object} map[string]string
 // @Failure 		500 {object} map[string]string
 // @Router 			/users/ [post]
@@ -94,7 +94,7 @@ func (controller *UserControllerImp) CreateUser(c *gin.Context) {
 // @Tags 			users
 // @Param 			Id path string true "User ID"
 // @Produce 		json
-// @Success 		200 {object} models.User{}
+// @Success 		200 {object} models.UserSwagger{}
 // @Failure 		404 {object} map[string]string
 // @Failure 		500 {object} map[string]string
 // @Router 			/users/{UserId} [delete]
