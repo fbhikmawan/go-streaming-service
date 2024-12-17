@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -21,16 +22,16 @@ type UserService interface {
 }
 
 func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
-	var user *models.User
+	var user models.User
 
 	db, err := config.GetDB()
 	if err != nil {
 		return nil, err
 	}
 
-	dbCtx := db.Preload("Videos").First(&user, Id)
+	dbCtx := db.Preload("Videos").First(&user, "id = ?", Id)
 
-	if dbCtx.Error == gorm.ErrRecordNotFound {
+	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("user with Id %s not found", Id)
 	}
 
@@ -38,29 +39,28 @@ func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
 		return nil, dbCtx.Error
 	}
 
-
-	// Por alguna razon no devuelve el id del usuario
-	return user, nil
+	return &user, nil
 }
 
 func (service *UserServiceImp) GetUserByUserName(userName string) (*models.User, error) {
-	var user *models.User
+	var user models.User
+
 	db, err := config.GetDB()
 	if err != nil {
 		return nil, err
 	}
 
-	dbCtx := db.Where("user_name = ?", userName).Preload("Videos").First(&user)
+	dbCtx := db.Preload("Videos").First(&user, "username = ?", userName)
 
-	if dbCtx.Error == gorm.ErrRecordNotFound {
-		return nil, fmt.Errorf("user with userName %s not found", userName)
+	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("user with username %s not found", userName)
 	}
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func (service *UserServiceImp) CreateUser(user *models.User) (*models.User, error) {

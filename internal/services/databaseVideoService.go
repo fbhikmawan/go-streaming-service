@@ -33,7 +33,7 @@ func (service *databaseVideoService) FindUserVideos(userId string) ([]*models.Vi
 
 	var videos []*models.VideoModel
 
-	dbCtx := db.Where("user_id = ?", userId).Find(&videos)
+	dbCtx := db.Where(&models.VideoModel{UserID: userId}).Find(&videos)
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -51,7 +51,7 @@ func (service *databaseVideoService) FindById(videoId string) (*models.VideoMode
 
 	var video models.VideoModel
 
-	dbCtx := db.Where("id = ?", videoId).First(&video)
+	dbCtx := db.Where(&models.VideoModel{Id: videoId}).First(&video)
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error

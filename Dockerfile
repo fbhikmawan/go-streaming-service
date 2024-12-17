@@ -1,6 +1,9 @@
 # Usa una imagen base oficial de Go
 FROM golang:1.23.1
 
+# Instalar ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
+
 # Crea y define el directorio de trabajo
 WORKDIR /app
 

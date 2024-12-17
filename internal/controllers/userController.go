@@ -51,7 +51,7 @@ func (controller *UserControllerImp) GetUserByID(c *gin.Context) {
 // @Failure 				500 {object} map[string]string
 // @Router 					/users/username/{userName} [get]
 func (controller *UserControllerImp) GetUserByUserName(c *gin.Context) {
-	userName := c.Param("userName")
+	userName := c.Param("username")
 	users, err := controller.service.GetUserByUserName(userName)
 	if err != nil {
 		c.JSON(404, gin.H{"error": err.Error()})
@@ -65,7 +65,7 @@ func (controller *UserControllerImp) GetUserByUserName(c *gin.Context) {
 // @Description 	Save user in Db
 // @Tags 			users
 // @Accept 			json
-// @Param 			user body models.UserCreate{} true "User object containing all user details"
+// @Param 			user body models.UserLogin{} true "User object containing all user details"
 // @Produce 		json
 // @Success 		200 {object} models.UserSwagger{}
 // @Failure 		400 {object} map[string]string

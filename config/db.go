@@ -46,9 +46,15 @@ func GetDB() (*gorm.DB, error) {
 }
 
 func migrations(db *gorm.DB) error {
-	err := db.AutoMigrate(&models.User{}, &models.VideoModel{})
+	err := db.AutoMigrate(&models.User{})
 	if err != nil {
 		return err
 	}
+
+	err = db.AutoMigrate(&models.Video{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

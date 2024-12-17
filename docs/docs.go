@@ -187,7 +187,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserCreate"
+                            "$ref": "#/definitions/models.UserLogin"
                         }
                     }
                 ],
@@ -362,27 +362,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.UserCreate": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "models.UserLogin": {
             "type": "object",
             "required": [

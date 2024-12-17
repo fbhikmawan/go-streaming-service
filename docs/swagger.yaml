@@ -1,19 +1,5 @@
 basePath: /api/v1
 definitions:
-  models.UserCreate:
-    properties:
-      email:
-        type: string
-      id:
-        type: string
-      password:
-        type: string
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
   models.UserLogin:
     properties:
       password:
@@ -175,7 +161,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.UserCreate'
+          $ref: '#/definitions/models.UserLogin'
       produces:
       - application/json
       responses:

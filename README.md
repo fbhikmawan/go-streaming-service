@@ -59,10 +59,9 @@ In case of change the documentation make that:
 
 ## Features
 
-- Implementar postgresql para guardar usuarios e informacion de los videos
 - Manejar URL de AWS para devolver el contenido(videos)
 - Devolver los videos existentes y su contenido
-- Manejar transmision en vivo
+- Manejar transmision en vivos
 - RefreshTokens
 - Agregar el middleware de Auth a las rutas de streaming (middleware ya hecho)
 - Terminar el README.md
