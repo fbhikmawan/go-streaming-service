@@ -1,27 +1,51 @@
 package services
 
 import (
-	"github.com/google/uuid"
+	"fmt"
+
 	"github.com/unbot2313/go-streaming-service/config"
 	"github.com/unbot2313/go-streaming-service/internal/models"
 )
 
-func (service *databaseVideoService) FindLatestVideos() ([]*models.VideoModel, error) {
+func (service *databaseVideoService) FindLatestVideos() (*[]models.VideoModel, error) {
 	db, err := config.GetDB()
 
 	if err != nil {
 		return nil, err
 	}
 
-	var videos []*models.VideoModel
+	var videos []models.VideoModel
 
-	dbCtx := db.Order("created_at desc").Find(&videos)
+	dbCtx := db.Find(&videos)
+
+	fmt.Println(dbCtx.RowsAffected)
+
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
 	}
 
-	return videos, nil
+	return &videos, nil
+}
+
+func (service *databaseVideoService) FindVideoByID(videoId string) (*models.VideoModel, error) {
+	db, err := config.GetDB()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var video models.VideoModel
+
+	dbCtx := db.Where("id = ?", videoId).First(&video)
+
+	fmt.Println(dbCtx.RowsAffected)
+
+	if dbCtx.Error != nil {
+		return nil, dbCtx.Error
+	}
+
+	return &video, nil
 }
 
 func (service *databaseVideoService) FindUserVideos(userId string) ([]*models.VideoModel, error) {
@@ -63,7 +87,7 @@ func (service *databaseVideoService) FindById(videoId string) (*models.VideoMode
 func (service *databaseVideoService) CreateVideo(video *models.Video, userId string) (*models.VideoModel, error) {
 
 	Video := models.VideoModel{
-		Id: uuid.New().String(),
+		Id: video.Id,
 		Title: video.Title,
 		Description: video.Description,
 		UserID: userId,
@@ -77,6 +101,8 @@ func (service *databaseVideoService) CreateVideo(video *models.Video, userId str
 	}
 
 	dbCtx := db.Create(&video)
+
+	fmt.Println(dbCtx.RowsAffected)
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -97,7 +123,8 @@ func (service *databaseVideoService) DeleteVideo(videoId string) error {
 type databaseVideoService struct {}
 
 type DatabaseVideoService interface {
-	FindLatestVideos() ([]*models.VideoModel, error)
+	FindLatestVideos() (*[]models.VideoModel, error)
+	FindVideoByID(videoId string) (*models.VideoModel, error) 
 	FindUserVideos(userId string) ([]*models.VideoModel, error)
 	FindById(videoId string) (*models.VideoModel, error)
 	CreateVideo(video *models.Video, userId string) (*models.VideoModel, error)

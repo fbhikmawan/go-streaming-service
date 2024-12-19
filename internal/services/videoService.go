@@ -85,7 +85,10 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 	}
 
 	storagePath := config.LocalStoragePath
-	uniqueName := fmt.Sprintf("%s_%s", uuid.New().String(), header.Filename)
+
+	uuid := uuid.New().String()
+
+	uniqueName := fmt.Sprintf("%s_%s", uuid, header.Filename)
 
 	// Guardar el archivo directamente con Gin
 	savePath := filepath.Join(storagePath, uniqueName)
@@ -94,6 +97,7 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 	}
 
 	videoData := &models.Video{
+		Id: 			uuid,
 		Title:    		title,
 		Description:	description,
 		Video: 	 		header.Filename,

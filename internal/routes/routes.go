@@ -30,7 +30,8 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 		ProtectedRoute.Use(middlewares.AuthMiddleware)
 
 		// Rutas públicas
-        VideoRoutes.GET("/", videoController.GetLatestVideos)
+        VideoRoutes.GET("/latest", videoController.GetLatestVideos)
+		VideoRoutes.GET("/id/:videoid", videoController.GetVideoByID)
 
 		// Ruta protegida
         ProtectedRoute.POST("/upload", videoController.CreateVideo)

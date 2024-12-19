@@ -11,6 +11,7 @@ import (
 type VideoController interface {
 	GetLatestVideos(c *gin.Context)
 	CreateVideo(c *gin.Context)
+	GetVideoByID(c *gin.Context)
 }
 
 // SaveVideo		godoc
@@ -31,6 +32,30 @@ func (vc *VideoControllerImpl) GetLatestVideos(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, videos)
+}
+
+
+// GetVideoByID		godoc
+// @Summary 		Get a video by ID
+// @Description 	Get a video by its ID
+// @Tags 			streaming
+// @Produce 		json
+// @Param 			videoid path string true "Video ID"
+// @Success 		200 {object} models.VideoSwagger{}
+// @Failure 		400 {object} map[string]string
+// @Failure 		500 {object} map[string]string
+// @Router 			/streaming/id/{videoid} [get]
+func (vc *VideoControllerImpl) GetVideoByID(c *gin.Context) {
+	videoId := c.Param("videoid")
+
+	video, err := vc.databaseVideoService.FindVideoByID(videoId)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, video)
 }
 
 // SaveVideo		godoc
