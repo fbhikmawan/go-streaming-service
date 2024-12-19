@@ -66,14 +66,14 @@ func (service *databaseVideoService) FindUserVideos(userId string) ([]*models.Vi
 	return videos, nil
 }
 
-func (service *databaseVideoService) CreateVideo(video *models.Video, userId string) (*models.VideoModel, error) {
+func (service *databaseVideoService) CreateVideo(videoData *models.Video, userId string) (*models.VideoModel, error) {
 
 	Video := models.VideoModel{
-		Id: video.Id,
-		Title: video.Title,
-		Description: video.Description,
+		Id: videoData.Id,
+		Title: videoData.Title,
+		Description: videoData.Description,
 		UserID: userId,
-		VideoUrl: video.M3u8FileURL,
+		VideoUrl: videoData.M3u8FileURL,
 	}
 	
 	db, err := config.GetDB()
@@ -82,7 +82,7 @@ func (service *databaseVideoService) CreateVideo(video *models.Video, userId str
 		return nil, err
 	}
 
-	dbCtx := db.Create(&video)
+	dbCtx := db.Create(&Video)
 
 	fmt.Println(dbCtx.RowsAffected)
 

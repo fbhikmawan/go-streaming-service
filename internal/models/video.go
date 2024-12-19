@@ -30,16 +30,15 @@ type VideoSwagger struct {
 
 // el que se usa en la db
 type VideoModel struct {
-	Id          string    `json:"id" gorm:"primaryKey;not null;unique_index"`
-	VideoUrl    string    `json:"video" gorm:"column:video;not null"`
-	Title       string    `json:"title" gorm:"type:varchar(100);not null"`
-	Description string    `json:"description"`
-	UserID      string    `json:"user_id" gorm:"not null"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	DeletedAt   gorm.DeletedAt `gorm:"index"`
+	Id			string		`json:"id" gorm:"primaryKey;not null;unique_index"`
+	VideoUrl	string		`json:"video" gorm:"not null"`
+	Title		string		`json:"title" gorm:"type:varchar(100);not null"`
+	Description	string		`json:"description"`
+	UserID		string		`json:"user_id" gorm:"not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
-
 
 // nombre de la tabla de videomodel
 func (VideoModel) TableName() string {
