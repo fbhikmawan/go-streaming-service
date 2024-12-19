@@ -51,7 +51,7 @@ func migrations(db *gorm.DB) error {
 		return err
 	}
 
-	err = db.AutoMigrate(&models.Video{})
+	err = db.AutoMigrate(&models.VideoModel{})
 	if err != nil {
 		return err
 	}

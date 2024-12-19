@@ -66,24 +66,6 @@ func (service *databaseVideoService) FindUserVideos(userId string) ([]*models.Vi
 	return videos, nil
 }
 
-func (service *databaseVideoService) FindById(videoId string) (*models.VideoModel, error) {
-	db, err := config.GetDB()
-
-	if err != nil {
-		return nil, err
-	}
-
-	var video models.VideoModel
-
-	dbCtx := db.Where(&models.VideoModel{Id: videoId}).First(&video)
-
-	if dbCtx.Error != nil {
-		return nil, dbCtx.Error
-	}
-
-	return &video, nil
-}
-
 func (service *databaseVideoService) CreateVideo(video *models.Video, userId string) (*models.VideoModel, error) {
 
 	Video := models.VideoModel{
@@ -103,6 +85,8 @@ func (service *databaseVideoService) CreateVideo(video *models.Video, userId str
 	dbCtx := db.Create(&video)
 
 	fmt.Println(dbCtx.RowsAffected)
+
+	fmt.Println(dbCtx.Statement)
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -126,7 +110,6 @@ type DatabaseVideoService interface {
 	FindLatestVideos() (*[]models.VideoModel, error)
 	FindVideoByID(videoId string) (*models.VideoModel, error) 
 	FindUserVideos(userId string) ([]*models.VideoModel, error)
-	FindById(videoId string) (*models.VideoModel, error)
 	CreateVideo(video *models.Video, userId string) (*models.VideoModel, error)
 	UpdateVideo(video *models.VideoModel) (*models.VideoModel, error)
 	DeleteVideo(videoId string) error

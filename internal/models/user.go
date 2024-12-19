@@ -31,13 +31,14 @@ type UserSwagger struct {
 	Videos []VideoSwagger 	`json:"videos" gorm:"foreignKey:UserID"`
 }
 
+// el que se usa en la db
 type User struct {
 	Id           string    `json:"id" gorm:"primaryKey;not null;uniqueIndex"`
 	Username     string    `json:"username" gorm:"type:varchar(100);not null;uniqueIndex"`
 	Password     string    `json:"password" gorm:"not null"`
 	Email        string    `json:"email" gorm:"type:varchar(100)"`
 	RefreshToken string    `json:"refresh_token"`
-	Videos []VideoModel 	`json:"videos" gorm:"foreignKey:UserID"`
+	Videos 		 []VideoModel 	`json:"videos" gorm:"foreignKey:UserID"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	DeletedAt    gorm.DeletedAt `gorm:"index"`

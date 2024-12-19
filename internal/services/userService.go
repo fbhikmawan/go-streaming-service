@@ -24,19 +24,23 @@ type UserService interface {
 func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
 	var user models.User
 
+	// Obtén la conexión a la base de datos
 	db, err := config.GetDB()
 	if err != nil {
 		return nil, err
 	}
 
-	dbCtx := db.Preload("Videos").First(&user, "id = ?", Id)
+	// Busca el usuario por ID e incluye los videos asociados
+	err = db.Preload("Videos").First(&user, "id = ?", Id).Error
 
-	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
-		return nil, fmt.Errorf("user with Id %s not found", Id)
+	// Maneja el caso de usuario no encontrado
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("user with ID %s not found", Id)
 	}
 
-	if dbCtx.Error != nil {
-		return nil, dbCtx.Error
+	// Maneja cualquier otro error
+	if err != nil {
+		return nil, err
 	}
 
 	return &user, nil
@@ -45,19 +49,23 @@ func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
 func (service *UserServiceImp) GetUserByUserName(userName string) (*models.User, error) {
 	var user models.User
 
+	// Obtén la conexión a la base de datos
 	db, err := config.GetDB()
 	if err != nil {
 		return nil, err
 	}
 
-	dbCtx := db.Preload("Videos").First(&user, "username = ?", userName)
+	// Busca el usuario por username e incluye los videos asociados
+	err = db.Preload("Videos").First(&user, "username = ?", userName).Error
 
-	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
+	// Maneja el caso de usuario no encontrado
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("user with username %s not found", userName)
 	}
 
-	if dbCtx.Error != nil {
-		return nil, dbCtx.Error
+	// Maneja cualquier otro error
+	if err != nil {
+		return nil, err
 	}
 
 	return &user, nil
