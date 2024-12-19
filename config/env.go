@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/joho/godotenv"
@@ -17,6 +18,8 @@ type Config struct {
 	AWSAccessKey string
 	AWSSecretKey string
 	LocalStoragePath string
+
+	DOCKER_MODE 	bool
 
 	PostgresHost	 string
 	PostgresPort	 string
@@ -53,6 +56,8 @@ func GetConfig() *Config {
 			AWSAccessKey: getEnv("AWS_ACCESS_KEY_ID", ""),
 			AWSSecretKey: getEnv("AWS_SECRET_ACCESS_KEY", ""),
 
+			DOCKER_MODE: getEnvAsBool("DOCKER_MODE", false),
+
 			PostgresHost: getEnv("POSTGRES_HOST", "localhost"),
 			PostgresPort: getEnv("POSTGRES_PORT", "5432"),
 			PostgresUser: getEnv("POSTGRES_USER", "postgres"),
@@ -74,6 +79,14 @@ func loadEnv() error {
 
 }
 
+// getEnvAsBool obtiene una variable de entorno como booleano o retorna un valor por defecto.
+func getEnvAsBool(key string, defaultValue bool) bool {
+	valStr := getEnv(key, "")
+	if val, err := strconv.ParseBool(valStr); err == nil {
+		return val
+	}
+	return defaultValue
+}
 
 func getEnv(key, defaultValue string) string {
 	value, exists := os.LookupEnv(key)
