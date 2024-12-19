@@ -30,7 +30,8 @@ type videoServiceImp struct{
 type VideoService interface {
 	SaveVideo(c *gin.Context) (*models.Video, error)
 	FormatVideo(videoName string) (string, error) 
-	UploadFilesFromFolderToS3(folder string) (string, error)
+	UploadFilesFromFolderToS3(folder string) (string, string, error)
+	DeleteS3Folder(folderName string) error
 	GetFilesService() FilesService // Nuevo método para acceder a FilesService
 	IsValidVideoExtension(c *gin.Context) bool
 }
