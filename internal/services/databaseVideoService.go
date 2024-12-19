@@ -7,19 +7,16 @@ import (
 	"github.com/unbot2313/go-streaming-service/internal/models"
 )
 
-func (service *databaseVideoService) FindLatestVideos() (*[]models.VideoModel, error) {
+func (service *databaseVideoService) FindLatestVideos() (*[]*models.VideoModel, error) {
 	db, err := config.GetDB()
-
 	if err != nil {
 		return nil, err
 	}
 
-	var videos []models.VideoModel
+	var videos []*models.VideoModel
 
-	dbCtx := db.Find(&videos)
-
-	fmt.Println(dbCtx.RowsAffected)
-
+	// Ordenar por CreatedAt en orden descendente
+	dbCtx := db.Order("created_at DESC").Find(&videos)
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -107,7 +104,7 @@ func (service *databaseVideoService) DeleteVideo(videoId string) error {
 type databaseVideoService struct {}
 
 type DatabaseVideoService interface {
-	FindLatestVideos() (*[]models.VideoModel, error)
+	FindLatestVideos() (*[]*models.VideoModel, error)
 	FindVideoByID(videoId string) (*models.VideoModel, error) 
 	FindUserVideos(userId string) ([]*models.VideoModel, error)
 	CreateVideo(video *models.Video, userId string) (*models.VideoModel, error)
