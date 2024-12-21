@@ -84,6 +84,7 @@ func (service *databaseVideoService) CreateVideo(videoData *models.Video, userId
 		UserID: userId,
 		VideoUrl: videoData.M3u8FileURL,
 		Duration: videoData.Duration,
+		ThumbnailURL: videoData.ThumbnailURL,
 	}
 	
 	db, err := config.GetDB()

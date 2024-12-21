@@ -15,6 +15,7 @@ type Video struct {
 	UniqueName  	string
 	M3u8FileURL  	string
 	Duration   		string	
+	ThumbnailURL 	string
 }
 
 
@@ -27,6 +28,8 @@ type VideoSwagger struct {
 	Description 	string    	`json:"description"`
 	UserID			string		`json:"user_id" gorm:"not null"`
 	Duration   		string	 	`json:"duration"`
+	ThumbnailURL 	string   	`json:"thumbnail"`
+
 
 }
 
@@ -38,6 +41,7 @@ type VideoModel struct {
 	Description	string			`json:"description"`
 	UserID		string			`json:"user_id" gorm:"not null"`
 	Duration   	string	 		`json:"duration"`
+	ThumbnailURL 	string   	`json:"thumbnail"`
 	CreatedAt 	time.Time
 	UpdatedAt	time.Time
 	DeletedAt 	gorm.DeletedAt 	`gorm:"index"`

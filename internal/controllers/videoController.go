@@ -123,6 +123,13 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 	// borrar archivos locales .ts y .m3u8
 	defer vc.videoService.GetFilesService().RemoveFolder(filesPath)
 
+	// generar miniatura del segundo 1 del video
+	_, err = services.SaveThumbnail(videoData.LocalPath, filesPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	// subir el video a s3
 	savedDataInS3, baseFolder, err := vc.videoService.UploadFilesFromFolderToS3(filesPath)
 	if err != nil {
@@ -130,8 +137,9 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 		return
 	}
 
-	videoData.M3u8FileURL = savedDataInS3
-
+	videoData.M3u8FileURL = savedDataInS3.M3u8FileURL
+	videoData.ThumbnailURL = savedDataInS3.ThumbnailURL
+	
 	// finalmente, guardar la url del video en la base de datos
 	Video, err := vc.databaseVideoService.CreateVideo(videoData, authenticatedUser.Id)
 	if err != nil {

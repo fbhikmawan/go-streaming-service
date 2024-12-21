@@ -28,7 +28,7 @@ var validVideoExtensions = []string{
 type VideoService interface {
 	SaveVideo(c *gin.Context) (*models.Video, error)
 	FormatVideo(videoName string) (string, error) 
-	UploadFilesFromFolderToS3(folder string) (string, string, error)
+	UploadFilesFromFolderToS3(folder string) (importantFiles, string, error)
 	DeleteS3Folder(folderName string) error
 	GetFilesService() FilesService // Nuevo método para acceder a FilesService
 	IsValidVideoExtension(c *gin.Context) bool
@@ -197,4 +197,27 @@ func getVideoDuration(videoPath string) (string, error) {
     }
 
     return formatDuration(seconds), nil
+}
+
+func SaveThumbnail(videoPath string, folderPath string) (string, error) {
+
+    // Generar nombre y ruta para la miniatura
+    thumbnailName := fmt.Sprintf("%s.webp", "thumbnail")
+    thumbnailPath := filepath.Join(folderPath, thumbnailName)
+
+    // Generar miniatura usando ffmpeg
+    cmd := exec.Command("ffmpeg",
+        "-i", videoPath,         // archivo de entrada
+        "-ss", "00:00:08",      // tomar frame al segundo 8
+        "-vframes", "1",        // tomar solo 1 frame
+        "-vf", "scale=480:-1",  // redimensionar a 480px de ancho
+        "-y",                   // sobrescribir si existe
+        thumbnailPath,          // ruta de salida (CORREGIDO: usar thumbnailPath en lugar de folderPath)
+    )
+
+    if output, err := cmd.CombinedOutput(); err != nil {
+        return "", fmt.Errorf("error generando miniatura: %w, output: %s", err, string(output))
+    }
+
+    return thumbnailPath, nil
 }
