@@ -87,10 +87,14 @@ func (service *UserServiceImp) CreateUser(user *models.User) (*models.User, erro
 
 	user.Password = hashedPassword
 
-	newUser := db.Create(user)
+	dbCtx := db.Create(user)
 
-	if newUser.Error != nil {
-		return nil, newUser.Error
+	if errors.Is(dbCtx.Error, gorm.ErrDuplicatedKey) {
+		return nil, fmt.Errorf("user with username %s already exists", user.Username)
+	}
+
+	if dbCtx.Error != nil {
+		return nil, dbCtx.Error
 	}
 
 	return user, nil
@@ -104,9 +108,14 @@ func (service *UserServiceImp) DeleteUserByID(Id string) error {
 	}
 
 	 // Elimina el usuario usando el campo personalizado `Id`
-    userDeleted := db.Where("id = ?", Id).Delete(&models.User{})
-    if userDeleted.Error != nil {
-        return userDeleted.Error
+    dbCtx := db.Where("id = ?", Id).Delete(&models.User{})
+
+	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("user with ID %s not found", Id)
+	}
+
+    if dbCtx.Error != nil {
+        return dbCtx.Error
     }
 
 	return nil
