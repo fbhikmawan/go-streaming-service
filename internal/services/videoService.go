@@ -200,19 +200,17 @@ func getVideoDuration(videoPath string) (string, error) {
 }
 
 func SaveThumbnail(videoPath string, folderPath string) (string, error) {
-
-    // Generar nombre y ruta para la miniatura
     thumbnailName := fmt.Sprintf("%s.webp", "thumbnail")
     thumbnailPath := filepath.Join(folderPath, thumbnailName)
 
-    // Generar miniatura usando ffmpeg
+    // El cambio principal está en mover -ss antes de -i
     cmd := exec.Command("ffmpeg",
+        "-ss", "00:00:08",      // MOVIDO: colocar antes de -i
         "-i", videoPath,         // archivo de entrada
-        "-ss", "00:00:08",      // tomar frame al segundo 8
-        "-vframes", "1",        // tomar solo 1 frame
-        "-vf", "scale=480:-1",  // redimensionar a 480px de ancho
-        "-y",                   // sobrescribir si existe
-        thumbnailPath,          // ruta de salida (CORREGIDO: usar thumbnailPath en lugar de folderPath)
+        "-frames:v", "1",        // usar frames:v en lugar de vframes
+        "-vf", "scale=480:-1",   
+        "-y",                   
+        thumbnailPath,          
     )
 
     if output, err := cmd.CombinedOutput(); err != nil {
