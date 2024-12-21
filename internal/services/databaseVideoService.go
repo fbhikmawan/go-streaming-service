@@ -1,10 +1,12 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/unbot2313/go-streaming-service/config"
 	"github.com/unbot2313/go-streaming-service/internal/models"
+	"gorm.io/gorm"
 )
 
 func (service *databaseVideoService) FindLatestVideos() (*[]*models.VideoModel, error) {
@@ -17,6 +19,10 @@ func (service *databaseVideoService) FindLatestVideos() (*[]*models.VideoModel, 
 
 	// Ordenar por CreatedAt en orden descendente
 	dbCtx := db.Order("created_at DESC").Find(&videos)
+
+	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("no videos found")
+	}
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -36,7 +42,9 @@ func (service *databaseVideoService) FindVideoByID(videoId string) (*models.Vide
 
 	dbCtx := db.Where("id = ?", videoId).First(&video)
 
-	fmt.Println(dbCtx.RowsAffected)
+	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("video with id %s not found", videoId)
+	}
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -55,6 +63,10 @@ func (service *databaseVideoService) FindUserVideos(userId string) ([]*models.Vi
 	var videos []*models.VideoModel
 
 	dbCtx := db.Where(&models.VideoModel{UserID: userId}).Find(&videos)
+
+	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("no videos found for user with id %s", userId)
+	}
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
@@ -81,9 +93,9 @@ func (service *databaseVideoService) CreateVideo(videoData *models.Video, userId
 
 	dbCtx := db.Create(&Video)
 
-	fmt.Println(dbCtx.RowsAffected)
-
-	fmt.Println(dbCtx.Statement)
+	if errors.Is(dbCtx.Error, gorm.ErrDuplicatedKey) {
+		return nil, fmt.Errorf("ya hay un video con el id %s", videoData.Id)
+	}
 
 	if dbCtx.Error != nil {
 		return nil, dbCtx.Error
