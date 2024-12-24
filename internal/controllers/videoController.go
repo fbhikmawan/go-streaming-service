@@ -12,6 +12,7 @@ type VideoController interface {
 	GetLatestVideos(c *gin.Context)
 	CreateVideo(c *gin.Context)
 	GetVideoByID(c *gin.Context)
+	IncrementViews(c *gin.Context)
 }
 
 // SaveVideo		godoc
@@ -56,6 +57,30 @@ func (vc *VideoControllerImpl) GetVideoByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, video)
+}
+
+// IncrementViews		godoc
+// @Summary 		Increment the views of a video
+// @Description 	Increment the views of a video by 1
+// @Tags 			streaming
+// @Produce 		json
+// @Param 			videoid path string true "Video ID"
+// @Success 		200 {object} models.VideoSwagger{}	
+// @Failure 		400 {object} map[string]string
+// @Failure 		500 {object} map[string]string
+// @Router 			/streaming/views/{videoid} [patch]
+func (vc *VideoControllerImpl) IncrementViews(c *gin.Context) {
+	videoId := c.Param("videoid")
+
+	video, err := vc.databaseVideoService.IncrementViews(videoId)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, video)
+	
 }
 
 // SaveVideo		godoc
