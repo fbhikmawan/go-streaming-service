@@ -28,7 +28,7 @@ func (controller *AuthControllerImp) Login(c *gin.Context) {
 	var userLogin models.UserLogin
 
 	if err := c.ShouldBindJSON(&userLogin); err != nil {
-		err = fmt.Errorf("se requiere de un usuario y contraseña")
+		err = fmt.Errorf("a user name and password are required")
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
@@ -46,9 +46,9 @@ func (controller *AuthControllerImp) Login(c *gin.Context) {
 	})
 }
 
-// Register es el controlador para el endpoint de registro
+// Register is the controller for the register endpoint
 func (controller *AuthControllerImp) Register(c *gin.Context) {
-	// Implementar
+	// Implementing
 }
 
 
@@ -56,7 +56,7 @@ type AuthControllerImp struct {
 	authService services.AuthService
 }
 
-// NewAuthController crea una nueva instancia del controlador de autenticación
+// NewAuthController creates a new instance of the authentication controller
 func NewAuthController(authService services.AuthService) AuthController {
 	return &AuthControllerImp{authService}
 }

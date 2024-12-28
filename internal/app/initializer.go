@@ -5,17 +5,17 @@ import (
 	"github.com/unbot2313/go-streaming-service/internal/services"
 )
 
-// InitializeComponents crea las instancias de los servicios y controladores
+// InitializeComponents creates the instances of the services and drivers
 func InitializeComponents() (controllers.UserController, controllers.AuthController, controllers.VideoController) {
-	// Inicializa los servicios
+	// Initialize services
 	userService := services.NewUserService()
 	authService := services.NewAuthService()
 
-	// Inicializa los controladores
+	// Initializes the controllers
 	userController := controllers.NewUserController(userService)
 	authController := controllers.NewAuthController(authService)
 
-	// Inicializa el controlador de videos
+	// Initializes the video controller
 	S3configuration := services.GetS3Configuration()
 	filesService := services.NewFilesService()
 	videoService := services.NewVideoService(S3configuration, filesService)

@@ -98,21 +98,21 @@ func (vc *VideoControllerImpl) IncrementViews(c *gin.Context) {
 // @Router 			/streaming/upload [post]
 func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 
-	// Recuperar el usuario del contexto
+	// Retrieve the user from the context
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(500, gin.H{"error": "User not found in context"})
 		return
 	}
 
-	// Convertir a tipo User
+	// Convert to User type
 	authenticatedUser, ok := user.(*models.User)
 	if !ok {
 		c.JSON(500, gin.H{"error": "Failed to parse user data"})
 		return
 	}
 
-	// verificar si el archivo es válido
+	// check if the file is valid
 	if !vc.videoService.IsValidVideoExtension(c) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "El archivo no es un tipo de video válido."})
 		return
@@ -125,37 +125,37 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 		return
 	}
 
-	// guardar archivo en local
+	// save file locally
 	videoData, err := vc.videoService.SaveVideo(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// borrar el archivo original
+	// delete the original file
 	defer vc.videoService.GetFilesService().RemoveFile(videoData.LocalPath)
 
-	// comprimir el video
-	// pendiente
+	// compress the video
+	// pending
 
-	//pasar a archivos .ts y .m3u8 con ffmpeg y guardarlo en local
+	// transfer to .ts and .m3u8 files with ffmpeg and save locally
 	filesPath, err := vc.videoService.FormatVideo(videoData.UniqueName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// borrar archivos locales .ts y .m3u8
+	// delete local .ts and .m3u8 files
 	defer vc.videoService.GetFilesService().RemoveFolder(filesPath)
 
-	// generar miniatura del segundo 1 del video
+	// generate thumbnail of second 1 of the video
 	_, err = services.SaveThumbnail(videoData.LocalPath, filesPath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// subir el video a s3
+	// upload the video to s3
 	savedDataInS3, baseFolder, err := vc.videoService.UploadFilesFromFolderToS3(filesPath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -165,12 +165,12 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 	videoData.M3u8FileURL = savedDataInS3.M3u8FileURL
 	videoData.ThumbnailURL = savedDataInS3.ThumbnailURL
 	
-	// finalmente, guardar la url del video en la base de datos
+	// finally, save the url of the video in the database
 	Video, err := vc.databaseVideoService.CreateVideo(videoData, authenticatedUser.Id)
 	if err != nil {
 
-		// como el video no se guardó en la base de datos, se debe borrar de s3
-		// como folder/
+		// as the video was not saved in the database, it must be deleted from s3
+		// as folder/
 		defer vc.videoService.DeleteS3Folder(baseFolder + "/")
 
 		c.JSON(400, gin.H{"error": err.Error()})

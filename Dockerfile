@@ -1,20 +1,20 @@
-# Usa una imagen base oficial de Go
+# Uses an official Go base image
 FROM golang:1.23.1
 
-# Instalar ffmpeg
+# Install ffmpeg
 RUN apt-get update && apt-get install -y ffmpeg
 
-# Crea y define el directorio de trabajo
+# Create and define the working directory
 WORKDIR /app
 
-# Copia los archivos del proyecto al contenedor
+# Copies the project files to the container
 COPY go.mod go.sum ./
 RUN go mod tidy
 
 COPY . .
 
-# Expone el puerto en el que escucha tu aplicación
+# Exposes the port your application listens on
 EXPOSE 3003
 
-# Comando por defecto
+# Default command
 CMD ["go", "run", "main.go"]

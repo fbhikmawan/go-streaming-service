@@ -126,7 +126,7 @@ func (service *databaseVideoService) CreateVideo(videoData *models.Video, userId
 	dbCtx := db.Create(&Video)
 
 	if errors.Is(dbCtx.Error, gorm.ErrDuplicatedKey) {
-		return nil, fmt.Errorf("ya hay un video con el id %s", videoData.Id)
+		return nil, fmt.Errorf("there is already a video with the id %s", videoData.Id)
 	}
 
 	if dbCtx.Error != nil {

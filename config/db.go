@@ -14,15 +14,15 @@ var (
 	once       sync.Once
 )
 
-// GetDsn genera la cadena de conexión para la base de datos.
+// GetDsn generates the connection string for the database.
 func getDsn() string {
 
 	config := GetConfig()
 
 	dockerMode := config.DOCKER_MODE
-	// Si la aplicación está corriendo en un contenedor de Docker, se debe cambiar el host de la base de datos.
+	// If the application is running in a Docker container, the database host must be changed.
 	host := config.PostgresHost
-	// si no esta en un contenedor se busca por fuera de la coneccion de contenedores de docker
+	// if it is not in a container it is searched for outside the docker container connection
 	if !dockerMode {
 		host = "localhost"
 	}
@@ -34,7 +34,7 @@ func getDsn() string {
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbname, port)
 }
 
-// GetDB devuelve una instancia única de la conexión a la base de datos.
+// GetDB returns a single instance of the database connection.
 func GetDB() (*gorm.DB, error) {
 	var err error
 	once.Do(func() {
@@ -45,7 +45,7 @@ func GetDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// Migra las tablas a la base de datos.
+	// Migrates the tables to the database.
 	err = migrations(dbInstance)
 	if err != nil {
 		return nil, err

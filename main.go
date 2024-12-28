@@ -23,7 +23,7 @@ func main() {
 
 	r := gin.Default()
 
-	r.Use(cors.Default()) // Habilita CORS para todos los orígenes
+	r.Use(cors.Default()) // Enables CORS for all origins
 
 	apiGroup := r.Group("/api")
 
@@ -35,17 +35,17 @@ func main() {
 		panic(err)
 	}
 
-	// Servir archivos staticos (STREAMING)
-	// cuando se accede a la ruta /static, se sirven los archivos que estan en la carpeta public,
-	// ejm: http://localhost:3003/static/index.html, se sirve /public/index.html
+	// Serving static files (STREAMING)
+	// when accessing the /static path, files in the public folder are served,
+	// e.g.: http://localhost:3003/static/index.html, /public/index.html is served.
 	v1Group.Static("/static", "./static/temp")
 
-	// Inicializar los componentes de la aplicación
+	// Initialize the application components
 	userController, authController, videoController := app.InitializeComponents()
 
-	// Configurar las rutas
+	// Configure the routes
 	routes.SetupRoutes(v1Group, userController, authController, videoController)
-	// Configurar la documentación de Swagger
+	// Configuring Swagger documentation
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 

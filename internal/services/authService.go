@@ -29,30 +29,30 @@ func NewAuthService() AuthService {
 }
 
 func (service *AuthServiceImp) Login(username, password string) (string, error) {
-	// Buscar el usuario en la base de datos
+	// Search for the user in the database
 
 	_, err := config.GetDB()
 
 	if err != nil {
-		return "", fmt.Errorf("error al conectar a la base de datos: %v", err)
+		return "", fmt.Errorf("error connecting to database: %v", err)
 	}
 
 	user, err := service.userService.GetUserByUserName(username)
 
 	if err != nil {
-		return "", fmt.Errorf("error al buscar el usuario: %v", err)
+		return "", fmt.Errorf("error when searching for user: %v", err)
 	}
 
-	// Verificar la contraseña
+	// Verify password
 	if !CheckPasswordHash(password, user.Password) {
-		return "", fmt.Errorf("la contraseña no es válida")
+		return "", fmt.Errorf("the password is invalid")
 	}
 
-	// Generar el token
+	// Generate token
 	token, err := service.GenerateToken(user)
 
 	if err != nil {
-		return "", fmt.Errorf("error al generar el token: %v", err)
+		return "", fmt.Errorf("error generating token: %v", err)
 	}
 
 	return token, nil
@@ -62,18 +62,18 @@ func (service *AuthServiceImp) GenerateToken(user *models.User) (string, error) 
 
 	SecretToken := []byte(config.GetConfig().JWTSecretKey)
 
-	//crear token
+	//create token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  user.Id,               // Identificador único del usuario
-		"username": user.Username,         // Nombre de usuario para referencia
+		"user_id":  user.Id,               // User's unique identifier
+		"username": user.Username,         // User name for reference
 		"email":    user.Email,            
-		"exp":  time.Now().Add(time.Hour * 24).Unix(), // Expira en 24 horas
+		"exp":  time.Now().Add(time.Hour * 24).Unix(), // Expires in 24 hours
 	})
 
-	//firmar token
+	//sign token
 	tokenString, err := token.SignedString(SecretToken)
 	if err != nil {
-		return "", fmt.Errorf("error al firmar el token: %v", err)
+		return "", fmt.Errorf("error when signing token: %v", err)
 	}
 
 	return tokenString, nil
@@ -83,36 +83,36 @@ func (service *AuthServiceImp) ValidateToken(tokenString string) (*models.User, 
 	
 	SecretToken := []byte(config.GetConfig().JWTSecretKey)
 
-	// Parsear y verificar el token
+	// Parse and verify the token
 	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Validar el método de firma
+		// Validate the signature method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("método de firma inesperado: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signature method: %v", token.Header["alg"])
 		}
 		return SecretToken, nil
 	})
 
 	if err != nil {
-		// Error al parsear o verificar el token
-		return nil, fmt.Errorf("error al parsear el token: %v", err)
+		// Error parsing or verifying token
+		return nil, fmt.Errorf("error parsing token: %v", err)
 	}
 
-	// Extraer y validar los claims
+	// Extract and validate claims
 	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
-		// Validar y construir el objeto usuario
+		// Validate and build the user object
 		id, ok := claims["user_id"].(string)
 		if !ok {
-			return nil, fmt.Errorf("user_id no es válido")
+			return nil, fmt.Errorf("user_id is not valid")
 		}
 
 		username, ok := claims["username"].(string)
 		if !ok {
-			return nil, fmt.Errorf("username no es válido")
+			return nil, fmt.Errorf("username is not valid")
 		}
 
 		email, ok := claims["email"].(string)
 		if !ok {
-			return nil, fmt.Errorf("email no es válido")
+			return nil, fmt.Errorf("email is not valid")
 		}
 
 		user := &models.User{
@@ -124,25 +124,25 @@ func (service *AuthServiceImp) ValidateToken(tokenString string) (*models.User, 
 		return user, nil
 	}
 
-	// Si el token no es válido o los claims no son correctos
-	return nil, fmt.Errorf("token inválido o claims inválidos")
+	// If the token is invalid or the claims are not correct
+	return nil, fmt.Errorf("invalid token or invalid claims")
 }
 
-// Función para hashear una contraseña
+// Function to hash a password
 func HashPassword(password string) (string, error) {
-	// Generar el hash de la contraseña con un costo predeterminado (bcrypt.DefaultCost)
+	// Generate the password hash with a default cost (bcrypt.DefaultCost)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", fmt.Errorf("error al generar el hash: %v", err)
+		return "", fmt.Errorf("error when generating the hash: %v", err)
 	}
 	return string(hashedPassword), nil
 }
 
-// Función para comparar una contraseña sin hashear con su hash
+// Function to compare an unhashed password with its hash
 func CheckPasswordHash(password, hashedPassword string) bool {
-	// Comparar la contraseña con el hash
+	// Compare the password with the hash
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-	return err == nil // Devuelve true si no hubo errores
+	return err == nil // Returns true if there were no errors
 }
 
 

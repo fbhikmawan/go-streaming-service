@@ -28,7 +28,7 @@ func AuthMiddleware(c *gin.Context) {
 		return
 	}
 
-	// Guardar el usuario autenticado en el contexto de Gin
+	// Save the authenticated user in the context of Gin
 	c.Set("user", user)
 
 

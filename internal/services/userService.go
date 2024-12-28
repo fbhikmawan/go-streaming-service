@@ -24,21 +24,21 @@ type UserService interface {
 func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
 	var user models.User
 
-	// Obtén la conexión a la base de datos
+	// Get the connection to the database
 	db, err := config.GetDB()
 	if err != nil {
 		return nil, err
 	}
 
-	// Busca el usuario por ID e incluye los videos asociados
+	// Searches for the user by ID and includes the associated videos
 	err = db.Preload("Videos").First(&user, "id = ?", Id).Error
 
-	// Maneja el caso de usuario no encontrado
+	// Handles the user not found case
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("user with ID %s not found", Id)
 	}
 
-	// Maneja cualquier otro error
+	// Handles any other errors
 	if err != nil {
 		return nil, err
 	}
@@ -49,21 +49,21 @@ func (service *UserServiceImp) GetUserByID(Id string) (*models.User, error) {
 func (service *UserServiceImp) GetUserByUserName(userName string) (*models.User, error) {
 	var user models.User
 
-	// Obtén la conexión a la base de datos
+	// Get the connection to the database
 	db, err := config.GetDB()
 	if err != nil {
 		return nil, err
 	}
 
-	// Busca el usuario por username e incluye los videos asociados
+	// Search for the user by username and include the associated videos.
 	err = db.Preload("Videos").First(&user, "username = ?", userName).Error
 
-	// Maneja el caso de usuario no encontrado
+	// Handles the user not found case
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("user with username %s not found", userName)
 	}
 
-	// Maneja cualquier otro error
+	// Handles any other errors
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (service *UserServiceImp) DeleteUserByID(Id string) error {
 		return err
 	}
 
-	 // Elimina el usuario usando el campo personalizado `Id`
+	// Deletes the user using the custom field `Id`.
     dbCtx := db.Where("id = ?", Id).Delete(&models.User{})
 
 	if errors.Is(dbCtx.Error, gorm.ErrRecordNotFound) {
@@ -121,7 +121,7 @@ func (service *UserServiceImp) DeleteUserByID(Id string) error {
 	return nil
 }
 
-// Pendiente
+// Pending
 func (service *UserServiceImp) UpdateUserByID(Id string, user *models.User) (*models.User, error) {
 	return nil, nil
 }

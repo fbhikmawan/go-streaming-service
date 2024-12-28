@@ -38,13 +38,13 @@ var (
 
 func GetConfig() *Config {
 
-	// usar Sync.Once para garantizar que la configuración se cargue solo una vez y evitar problemas de rendimiento
-	// y usa singleton para garantizar que solo haya una instancia de la configuración en toda la aplicación.
+	// use Sync.Once to ensure that the configuration is loaded only once and avoid performance issues
+	// and use singleton to ensure that there is only one instance of the configuration in the entire application.
 
 	configOnce.Do(func() {
 		err := loadEnv()
 		if err != nil {
-			panic(fmt.Sprintf("Error al cargar el archivo .env: %v", err))
+			panic(fmt.Sprintf("Error loading .env file: %v", err))
 		}
 
 		config = &Config{
@@ -72,14 +72,14 @@ func GetConfig() *Config {
 func loadEnv() error {
 	err := godotenv.Load()
 	if err != nil {
-		return fmt.Errorf("error loading .env: %v", err)
+		return fmt.Errorf("Error loading .env file: %v", err)
 	}
 
 	return nil
 
 }
 
-// getEnvAsBool obtiene una variable de entorno como booleano o retorna un valor por defecto.
+// getEnvAsBool gets an environment variable as a boolean or returns a default value.
 func getEnvAsBool(key string, defaultValue bool) bool {
 	valStr := getEnv(key, "")
 	if val, err := strconv.ParseBool(valStr); err == nil {

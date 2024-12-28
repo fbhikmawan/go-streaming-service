@@ -1,17 +1,15 @@
-version: "3.8"
-
 services:
   postgres:
-    image: postgres:15 # Versiond de imagen
+    image: postgres:15
     container_name: postgres_container
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:${POSTGRES_PORT}" # Puerto
+      - "5432:${POSTGRES_PORT}"
     volumes:
-      - postgres_data:/var/lib/postgresql/data # Persistencia de datos
+      - postgres_data:/var/lib/postgresql/data
     restart: always
 
   app:
@@ -33,7 +31,7 @@ services:
       - postgres
     volumes:
       - .:/app
-    command: ["go", "run", "main.go"] # Comando para INICIAR EL SERVIDOR
+    command: ["go", "run", "main.go"]
 
 volumes:
   postgres_data:

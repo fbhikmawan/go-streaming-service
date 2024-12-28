@@ -30,23 +30,23 @@ type VideoService interface {
 	FormatVideo(videoName string) (string, error) 
 	UploadFilesFromFolderToS3(folder string) (importantFiles, string, error)
 	DeleteS3Folder(folderName string) error
-	GetFilesService() FilesService // Nuevo método para acceder a FilesService
+	GetFilesService() FilesService // New method to access FilesService
 	IsValidVideoExtension(c *gin.Context) bool
 }
 
 
 func (vs *videoServiceImp) IsValidVideoExtension(c *gin.Context) bool {
 
-	// Intentar obtener el archivo del request
+	// Attempt to get the file from the request
 	file, err := c.FormFile("video")
 	if err != nil {
-		return false // El archivo no existe o hubo un error
+		return false // The file does not exist or there was an error
 	}
 
-	// Obtener la extensión del archivo en minúsculas
+	// Get file extension in lowercase letters
 	extension := strings.ToLower(filepath.Ext(file.Filename))
 
-	// Verificar si la extensión es válida
+	// Check if the extension is valid
 	for _, validExtension := range validVideoExtensions {
 		if validExtension == extension {
 			return true
@@ -66,15 +66,15 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 
 	config := config.GetConfig()
 
-	// 1. Obtener los campos de texto del formulario
+	// 1. Get the text fields of the form
 	title := c.PostForm("title")
 	description := c.PostForm("description")
 
-	// 2. Obtener el archivo del formulario
+	// 2. Get the form file
 	header, err := c.FormFile("video")
 
 	if err != nil {
-		return nil, fmt.Errorf("error al obtener el archivo: %w", err)
+		return nil, fmt.Errorf("error getting the file: %w", err)
 	}
 
 	storagePath := config.LocalStoragePath
@@ -83,16 +83,16 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 
 	uniqueName := fmt.Sprintf("%s_%s", uuid, header.Filename)
 
-	// Guardar el archivo directamente con Gin
+	// Save the file directly with Gin
 	savePath := filepath.Join(storagePath, uniqueName)
 	if err := c.SaveUploadedFile(header, savePath); err != nil {
-		return nil, fmt.Errorf("error al guardar el archivo: %w", err)
+		return nil, fmt.Errorf("error saving the file: %w", err)
 	}
 
-	// Obtener la duración del video
+	// Get video duration
 	duration, err := getVideoDuration(savePath)
 	if err != nil {
-		return nil, fmt.Errorf("error al obtener la duración del video: %w", err)
+		return nil, fmt.Errorf("error getting video duration: %w", err)
 	}
 
 	videoData := &models.Video{
@@ -110,26 +110,26 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 
 func (vs *videoServiceImp) FormatVideo(VideoName string) (string, error) {
 
-	//obtener el nombre del video sin la extensión
+	//get the name of the video without the extension
 	stringName := strings.Split(VideoName, ".")
 
-	//crear la carpeta donde se guardará el video formateado
+	//create the folder where the formatted video will be stored
 	err := vs.FilesService.CreateFolder("static/temp/" + stringName[0])
 
 	if err != nil {
-		return "", fmt.Errorf("error al crear la carpeta: %w", err)
+		return "", fmt.Errorf("error when creating the folder: %w", err)
 	}
 
 	saveFormatedPath := saveFormatedVideoPath + stringName[0] + "/output.m3u8"
 
 	videoPath := rawVideoPathFromWSL + VideoName
 
-	// ejecutar el comando ffmpeg para fragmentar el video y guardarlo en la carpeta ya creada para despues subirlo a s3
+	// run the ffmpeg command to fragment the video and save it in the folder already created for later uploading to s3
 	cmd := exec.Command("ffmpeg", "-i", videoPath, "-c", "copy", "-start_number", "0", "-hls_time", "10", "-hls_list_size", "0", "-f", "hls", saveFormatedPath)
 
 	err = cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("error al ejecutar el comando ffmpeg: %w", err)
+		return "", fmt.Errorf("error when executing the ffmpeg command: %w", err)
 	}
 
 	ffmpegFilesPath := saveFormatedVideoPath + stringName[0]
@@ -150,7 +150,7 @@ type videoServiceImp struct{
 	FilesService FilesService
 }
 
-// Función para obtener la duración del video usando go-ffprobe
+// Function to get the video duration using go-ffprobe
 type FFProbeOutput struct {
     Format struct {
         Duration string `json:"duration"`
@@ -158,12 +158,12 @@ type FFProbeOutput struct {
 }
 
 func formatDuration(seconds float64) string {
-    // Si es menos de 60 segundos, retornar solo segundos
+    // If less than 60 seconds, return seconds only.
     if seconds < 60 {
         return fmt.Sprintf("%.0fs", seconds)
     }
     
-    // Calcular minutos y segundos
+    // Calculate minutes and seconds
     minutes := math.Floor(seconds / 60)
     remainingSeconds := math.Round(seconds - (minutes * 60))
     
@@ -171,7 +171,7 @@ func formatDuration(seconds float64) string {
 }
 
 func getVideoDuration(videoPath string) (string, error) {
-    // Construir el comando ffprobe
+    // Build the ffprobe command
     cmd := exec.Command("ffprobe",
         "-v", "quiet",
         "-print_format", "json",
@@ -181,19 +181,19 @@ func getVideoDuration(videoPath string) (string, error) {
     // Ejecutar el comando y obtener la salida
     output, err := cmd.Output()
     if err != nil {
-        return "", fmt.Errorf("error ejecutando ffprobe: %v", err)
+        return "", fmt.Errorf("error running ffprobe: %v", err)
     }
 
-    // Parsear la salida JSON
+    // Parse JSON output
     var ffprobeOutput FFProbeOutput
     if err := json.Unmarshal(output, &ffprobeOutput); err != nil {
-        return "", fmt.Errorf("error parseando la salida de ffprobe: %v", err)
+        return "", fmt.Errorf("error parsing the output of ffprobe: %v", err)
     }
 
-    // Convertir la duración a float64
+    // Convert duration to float64
     seconds, err := strconv.ParseFloat(ffprobeOutput.Format.Duration, 64)
     if err != nil {
-        return "", fmt.Errorf("error convirtiendo la duración a número: %v", err)
+        return "", fmt.Errorf("error converting duration to number: %v", err)
     }
 
     return formatDuration(seconds), nil
@@ -203,18 +203,18 @@ func SaveThumbnail(videoPath string, folderPath string) (string, error) {
     thumbnailName := fmt.Sprintf("%s.webp", "thumbnail")
     thumbnailPath := filepath.Join(folderPath, thumbnailName)
 
-    // El cambio principal está en mover -ss antes de -i
+    // The main change is to move -ss before -i
     cmd := exec.Command("ffmpeg",
-        "-ss", "00:00:08",      // MOVIDO: colocar antes de -i
-        "-i", videoPath,         // archivo de entrada
-        "-frames:v", "1",        // usar frames:v en lugar de vframes
+        "-ss", "00:00:08",      // MOVED: place before -i
+        "-i", videoPath,         // input file
+        "-frames:v", "1",        // use frames:v instead of vframes
         "-vf", "scale=480:-1",   
         "-y",                   
         thumbnailPath,          
     )
 
     if output, err := cmd.CombinedOutput(); err != nil {
-        return "", fmt.Errorf("error generando miniatura: %w, output: %s", err, string(output))
+        return "", fmt.Errorf("error generating thumbnail: %w, output: %s", err, string(output))
     }
 
     return thumbnailPath, nil

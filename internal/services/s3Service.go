@@ -1,6 +1,6 @@
 package services
 
-// extension del videoService centrada en el manejo de archivos en S3
+// videoService extension focused on S3 file handling
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) (
 	error,
 ) {
 
-	// Obtener el nombre de la carpeta actual
+	// Get the name of the current folder
 	baseFolder := filepath.Base(folder)
 
 	var m3u8FileURL string
@@ -54,10 +54,10 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) (
 		}
 		defer f.Close()
 
-		// Construir el Key como nombre de la carpeta + nombre del archivo
+		// Construct the Key as folder name + file name
 		key := filepath.Join(baseFolder, file.Name())
 
-		// Subir el archivo a S3
+		// Upload the file to S3
 		result, errS3 := s3Service.S3configuration.Uploader.Upload(context.TODO(), &s3.PutObjectInput{
 			Bucket: aws.String(s3Service.S3configuration.BucketName),
 			Key:    aws.String(key),
@@ -69,7 +69,7 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) (
 			return importantFiles{}, baseFolder, errS3
 		}
 
-		 // Si es un archivo m3u8, guarda su URL para la base de datos
+		// If it is an m3u8 file, save its URL to the database
         if strings.HasSuffix(file.Name(), ".m3u8") {
             m3u8FileURL = result.Location
         }
@@ -81,7 +81,7 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) (
 	}
 
 	if m3u8FileURL == "" {
-		return importantFiles{}, baseFolder, fmt.Errorf("no se encontró el archivo .m3u8")
+		return importantFiles{}, baseFolder, fmt.Errorf("file .m3u8 not found")
     }
 	
 	return importantFiles{
@@ -90,14 +90,14 @@ func (s3Service *videoServiceImp) UploadFilesFromFolderToS3(folder string) (
 	}, baseFolder, nil
 }
 
-// DeleteFolder eliminará todos los objetos dentro de la "carpeta" especificada.
+// DeleteFolder will delete all objects inside the specified “folder”.
 func (s3Service *videoServiceImp) DeleteS3Folder(folderName string) error {
-    ctx := context.Background() // Define el contexto
+    ctx := context.Background() // Define the context
 
-	log.Println("Eliminando objetos en la carpeta: ", folderName)
+	log.Println("Deleting objects in the folder: ", folderName)
 
 
-    // Listar los objetos dentro de la "carpeta"
+    // List the objects inside the “folder”.
     input := &s3.ListObjectsV2Input{
         Bucket: aws.String(s3Service.S3configuration.BucketName),
         Prefix: aws.String(folderName), // Prefijo de la "carpeta"
@@ -106,11 +106,11 @@ func (s3Service *videoServiceImp) DeleteS3Folder(folderName string) error {
     objectPaginator := s3.NewListObjectsV2Paginator(s3Service.S3configuration.Client, input)
     var objectsToDelete []types.ObjectIdentifier
 
-    // Recorrer todos los objetos dentro del prefijo (carpeta) y agregarlos a la lista de eliminación
+    // Go through all objects within the prefix (folder) and add them to the deletion list
     for objectPaginator.HasMorePages() {
         output, err := objectPaginator.NextPage(ctx)
         if err != nil {
-            log.Printf("Error al listar objetos: %v\n", err)
+            log.Printf("Error when listing objects: %v\n", err)
             return err
         }
 
@@ -122,11 +122,11 @@ func (s3Service *videoServiceImp) DeleteS3Folder(folderName string) error {
     }
 
     if len(objectsToDelete) == 0 {
-        log.Println("No se encontraron objetos para eliminar.")
+        log.Println("No objects were found to remove.")
         return nil
     }
 
-    // Eliminar los objetos listados
+    // Delete listed objects
     deleteInput := &s3.DeleteObjectsInput{
         Bucket: aws.String(s3Service.S3configuration.BucketName),
         Delete: &types.Delete{
@@ -136,11 +136,11 @@ func (s3Service *videoServiceImp) DeleteS3Folder(folderName string) error {
 
     _, err := s3Service.S3configuration.Client.DeleteObjects(ctx, deleteInput)
     if err != nil {
-        log.Printf("Error al eliminar objetos: %v\n", err)
+        log.Printf("Error when deleting objects: %v\n", err)
         return err
     }
 
-    log.Printf("Se han eliminado los objetos en la carpeta %v.\n", folderName)
+    log.Printf("Objects in the folder %v.\n", folderName)
     return nil
 }
 
@@ -170,7 +170,7 @@ func (s3Service *videoServiceImp) ListObjects(ctx context.Context, bucketName st
 	return objects, err
 }
 
-// Configuracion
+// Configuration
 type S3Configuration struct {
 	Region string
 	BucketName string

@@ -6,8 +6,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// Esto es lo que deberia recibir el controlador al crear
-// un nuevo usuario
+// This is what the controller should receive when creating a new user
+// a new user
 type UserCreate struct {
 	Id         string `json:"id"`
 	Username   string `json:"username" binding:"required"`
@@ -20,8 +20,8 @@ type UserLogin struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// UserSwagger se usa en la documentacion ya que Swaggo no reconoce
-// los tags de gorms
+// UserSwagger is used in the documentation because Swaggo doesn't recognize
+// gorms tags
 type UserSwagger struct {
 	Id           string    `json:"id" gorm:"primaryKey;not null;uniqueIndex"`
 	Username     string    `json:"username" gorm:"type:varchar(100);not null;uniqueIndex"`
@@ -31,7 +31,7 @@ type UserSwagger struct {
 	Videos []VideoSwagger 	`json:"videos" gorm:"foreignKey:UserID"`
 }
 
-// el que se usa en la db
+// the one used in the db
 type User struct {
 	Id           string    `json:"id" gorm:"primaryKey;not null;uniqueIndex"`
 	Username     string    `json:"username" gorm:"type:varchar(100);not null;uniqueIndex"`

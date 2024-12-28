@@ -19,8 +19,8 @@ type Video struct {
 }
 
 
-// Tipo para usar en la documentacion con Swaggo
-// ya que no reconoce los tags de gorm
+// Type to use in the documentation with Swaggo
+// since it does not recognize gorm tags
 type VideoSwagger struct {
 	Id          	string    	`json:"id" gorm:"primaryKey;not null;uniqueIndex"`
 	VideoUrl       	string    	`json:"video" gorm:"not null"`
@@ -33,7 +33,7 @@ type VideoSwagger struct {
 
 }
 
-// el que se usa en la db
+// the one used in the db
 type VideoModel struct {
 	Id				string			`json:"id" gorm:"primaryKey;not null;uniqueIndex"`
 	VideoUrl		string			`json:"video" gorm:"not null"`
@@ -48,7 +48,7 @@ type VideoModel struct {
 	DeletedAt 		gorm.DeletedAt 	`gorm:"index"`
 }
 
-// nombre de la tabla de videomodel
+// videomodel table name
 func (VideoModel) TableName() string {
     return "videos"
 }

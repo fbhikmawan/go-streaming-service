@@ -6,9 +6,9 @@ import (
 	"github.com/unbot2313/go-streaming-service/internal/middlewares"
 )
 
-// SetupRoutes configura todas las rutas
+// SetupRoutes configures all routes
 func SetupRoutes(router *gin.RouterGroup, userController controllers.UserController, authController controllers.AuthController, videoController controllers.VideoController) {
-	// Rutas de usuarios
+	// User routes
 	userRoutes := router.Group("/users")
 	{
 		userRoutes.GET("/id/:id", userController.GetUserByID)
@@ -17,7 +17,7 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 		userRoutes.DELETE("/:id", userController.DeleteUserByID)
 	}
 
-	// Rutas de autenticación
+	// Authentication paths
 	authRoutes := router.Group("/auth")
 	{
 		authRoutes.POST("/login", authController.Login)
@@ -29,12 +29,12 @@ func SetupRoutes(router *gin.RouterGroup, userController controllers.UserControl
 		ProtectedRoute := VideoRoutes.Group("")
 		ProtectedRoute.Use(middlewares.AuthMiddleware)
 
-		// Rutas públicas
+		// Public roads
         VideoRoutes.GET("/latest", videoController.GetLatestVideos)
 		VideoRoutes.GET("/id/:videoid", videoController.GetVideoByID)
 		VideoRoutes.PATCH("/views/:videoid", videoController.IncrementViews)
 
-		// Ruta protegida
+		// Protected route
         ProtectedRoute.POST("/upload", videoController.CreateVideo)
     }
 	

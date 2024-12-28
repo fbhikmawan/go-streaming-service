@@ -1,5 +1,7 @@
 # How to start the proyect
 
+[English](README-en.md)
+
 Este es un proyecto de servicio de streaming construído en Go. Permite transmitir contenido multimedia utilizando AWS para la gestión de archivos y PostgreSQL para manejar la información de usuarios y videos. Además, soporta Docker para facilitar su despliegue en entornos locales y de producción.
 
 ## Tech Stack

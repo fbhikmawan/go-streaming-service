@@ -22,7 +22,7 @@ func NewFilesService() FilesService {
 func (fs *filesService) EnsureDir(dirName string) error {
 	err := os.MkdirAll(dirName, os.ModePerm)
 	if err != nil {
-		return fmt.Errorf("error al crear directorio: %w", err)
+		return fmt.Errorf("error creating directory: %w", err)
 	}
 
 	return nil
@@ -32,7 +32,7 @@ func (fs *filesService) RemoveFile(filePath string) error {
 	err := os.Remove(filePath)
 
 	if err != nil {
-		return fmt.Errorf("error al borrar archivo: %w", err)
+		return fmt.Errorf("error when deleting file: %w", err)
 	}
 
 	return nil
@@ -40,21 +40,21 @@ func (fs *filesService) RemoveFile(filePath string) error {
 
 
 func (fs *filesService) CreateFolder(path string) error {
-	// Crea la carpeta y sus carpetas padres si no existen
-	err := os.MkdirAll(path, os.ModePerm) // os.ModePerm otorga permisos de lectura, escritura y ejecución
+	// Creates the folder and its parent folders if they do not exist
+	err := os.MkdirAll(path, os.ModePerm) // os.ModePerm grants read, write and execute permissions
 	if err != nil {
-		return fmt.Errorf("error al crear la carpeta: %w", err)
+		return fmt.Errorf("error when creating the folder: %w", err)
 	}
 	return nil
 }
 
 func (fs *filesService) RemoveFolder(folder string) error {
-	//borrar la carpeta tras subir los archivos
+	//delete the folder after uploading files
 	err := os.RemoveAll(folder)
 	if err != nil {
 		return err
 	}
 
-	log.Println("error al borrar la carpeta: ", err)
+	log.Println("error when deleting the folder: ", err)
 	return err
 }
