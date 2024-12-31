@@ -13,7 +13,7 @@ func InitializeComponents() (controllers.UserController, controllers.AuthControl
 
 	// Initializes the controllers
 	userController := controllers.NewUserController(userService)
-	authController := controllers.NewAuthController(authService)
+	authController := controllers.NewAuthController(authService, userService)
 
 	// Initializes the video controller
 	S3configuration := services.GetS3Configuration()

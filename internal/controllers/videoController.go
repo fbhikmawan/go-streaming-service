@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+    "log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/unbot2313/go-streaming-service/internal/models"
@@ -97,10 +98,12 @@ func (vc *VideoControllerImpl) IncrementViews(c *gin.Context) {
 // @Failure 		500 {object} map[string]string
 // @Router 			/streaming/upload [post]
 func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
+	log.Println("Starting video creation process")
 
 	// Retrieve the user from the context
 	user, exists := c.Get("user")
 	if !exists {
+        log.Println("User not found in context")
 		c.JSON(500, gin.H{"error": "User not found in context"})
 		return
 	}
@@ -108,49 +111,62 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 	// Convert to User type
 	authenticatedUser, ok := user.(*models.User)
 	if !ok {
+        log.Println("Failed to parse user data")
 		c.JSON(500, gin.H{"error": "Failed to parse user data"})
 		return
 	}
 
 	// check if the file is valid
 	if !vc.videoService.IsValidVideoExtension(c) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "El archivo no es un tipo de video válido."})
+        log.Println("Invalid video extension")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "The file is not a valid video type."})
 		return
 	}
 
 	fileSize := c.Request.ContentLength
 	const maxFileSize = 100 * 1024 * 1024 // 100 MB
 	if fileSize > maxFileSize {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "El archivo excede el límite de tamaño permitido."})
+        log.Println("File exceeds maximum allowed size")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "The file exceeds the allowed size limit."})
 		return
 	}
 
 	// save file locally
 	videoData, err := vc.videoService.SaveVideo(c)
 	if err != nil {
+        log.Printf("Error saving video: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// transfer to .ts and .m3u8 files with ffmpeg and save locally
+	filesPath, err := vc.videoService.FormatVideo(videoData.UniqueName)
+	if err != nil {
+		log.Printf("Error formatting video: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// delete the original file
-	defer vc.videoService.GetFilesService().RemoveFile(videoData.LocalPath)
-
-	// compress the video
-	// pending
-
-	// transfer to .ts and .m3u8 files with ffmpeg and save locally
-	filesPath, err := vc.videoService.FormatVideo(videoData.UniqueName)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	// defer func() {
+    //     err := vc.videoService.GetFilesService().RemoveFile(videoData.LocalPath)
+    //     if err != nil {
+    //         log.Printf("Error deleting original file: %v", err)
+    //     }
+    // }()
 
 	// delete local .ts and .m3u8 files
-	defer vc.videoService.GetFilesService().RemoveFolder(filesPath)
+	// defer func() {
+    //     err := vc.videoService.GetFilesService().RemoveFolder(filesPath)
+    //     if err != nil {
+    //         log.Printf("Error deleting formatted files: %v", err)
+    //     }
+    // }()
 
 	// generate thumbnail of second 1 of the video
 	_, err = services.SaveThumbnail(videoData.LocalPath, filesPath)
 	if err != nil {
+		log.Printf("Error saving thumbnail: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -158,6 +174,7 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 	// upload the video to s3
 	savedDataInS3, baseFolder, err := vc.videoService.UploadFilesFromFolderToS3(filesPath)
 	if err != nil {
+		log.Printf("Error uploading to S3: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -168,15 +185,22 @@ func (vc *VideoControllerImpl) CreateVideo(c *gin.Context) {
 	// finally, save the url of the video in the database
 	Video, err := vc.databaseVideoService.CreateVideo(videoData, authenticatedUser.Id)
 	if err != nil {
+		log.Printf("Error saving video to database: %v", err)
 
 		// as the video was not saved in the database, it must be deleted from s3
 		// as folder/
-		defer vc.videoService.DeleteS3Folder(baseFolder + "/")
+		defer func() {
+            err := vc.videoService.DeleteS3Folder(baseFolder + "/")
+            if err != nil {
+                log.Printf("Error deleting S3 folder: %v", err)
+            }
+        }()
 
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
+	log.Println("Video creation successful")
 	c.JSON(http.StatusOK, Video)
 }
 

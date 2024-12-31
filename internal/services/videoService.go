@@ -8,17 +8,15 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+    "log"
+	"os"
+	"bytes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/unbot2313/go-streaming-service/config"
 	"github.com/unbot2313/go-streaming-service/internal/models"
-)
-
-var (
-	rawVideoPathFromWSL = "./static/videos/"
-	saveFormatedVideoPath = "./static/temp/"
 )
 
 var validVideoExtensions = []string{
@@ -60,40 +58,55 @@ func (vs *videoServiceImp) GetFilesService() FilesService {
 }
 
 func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
-	if err := vs.FilesService.EnsureDir("static/videos"); err != nil {
-		return nil, err
-	}
+	log.Println("Starting video save process")
 
 	config := config.GetConfig()
 
 	// 1. Get the text fields of the form
 	title := c.PostForm("title")
 	description := c.PostForm("description")
+    // Validate required fields
+    if title == "" {
+        log.Println("Missing required field: title")
+		return nil, fmt.Errorf("error missing required field: title")
+    }
+    if description == "" {
+        log.Println("Missing required field: description")
+		return nil, fmt.Errorf("error missing required field: description")
+    }
+	log.Printf("Title: %s, Description: %s", title, description)
 
 	// 2. Get the form file
 	header, err := c.FormFile("video")
-
 	if err != nil {
+		log.Printf("Error getting form file: %v", err)
 		return nil, fmt.Errorf("error getting the file: %w", err)
 	}
+	log.Printf("File name: %s, Size: %d bytes", header.Filename, header.Size)
 
 	storagePath := config.LocalStoragePath
+	log.Printf("Storage path: %s", storagePath)
 
 	uuid := uuid.New().String()
-
 	uniqueName := fmt.Sprintf("%s_%s", uuid, header.Filename)
+	log.Printf("Unique file name: %s", uniqueName)
 
 	// Save the file directly with Gin
 	savePath := filepath.Join(storagePath, uniqueName)
+	log.Printf("Save path: %s", savePath)
 	if err := c.SaveUploadedFile(header, savePath); err != nil {
+		log.Printf("Error saving uploaded file: %v", err)
 		return nil, fmt.Errorf("error saving the file: %w", err)
 	}
+	log.Printf("File saved successfully at: %s", savePath)
 
 	// Get video duration
 	duration, err := getVideoDuration(savePath)
 	if err != nil {
+		log.Printf("Error getting video duration: %v", err)
 		return nil, fmt.Errorf("error getting video duration: %w", err)
 	}
+	log.Printf("Video duration: %s", duration)
 
 	videoData := &models.Video{
 		Id: 			uuid,
@@ -105,36 +118,69 @@ func (vs *videoServiceImp) SaveVideo(c *gin.Context) (*models.Video, error) {
 		Duration: 		duration,
 	}
 
+	log.Println("Video saved successfully")
 	return videoData, nil
 }
 
 func (vs *videoServiceImp) FormatVideo(VideoName string) (string, error) {
+	log.Printf("Starting video formatting process for: %s", VideoName)
+
+	config := config.GetConfig()
 
 	//get the name of the video without the extension
 	stringName := strings.Split(VideoName, ".")
+	log.Printf("Extracted video name without extension: %s", stringName[0])
 
 	//create the folder where the formatted video will be stored
-	err := vs.FilesService.CreateFolder("static/temp/" + stringName[0])
+	storagePath := config.LocalStoragePath
+	log.Printf("Storage path: %s", storagePath)
 
-	if err != nil {
-		return "", fmt.Errorf("error when creating the folder: %w", err)
-	}
+	// Ensure the output directory exists
+    outputPath := filepath.Join(storagePath, "videos")
+    if err := os.MkdirAll(outputPath, 0755); err != nil {
+        return "", fmt.Errorf("failed to create output directory: %w", err)
+    }
 
-	saveFormatedPath := saveFormatedVideoPath + stringName[0] + "/output.m3u8"
+    // Use absolute paths
+    absOutputPath, err := filepath.Abs(filepath.Join(outputPath, "output.m3u8"))
+    if err != nil {
+        return "", fmt.Errorf("failed to get absolute output path: %w", err)
+    }
 
-	videoPath := rawVideoPathFromWSL + VideoName
+    absVideoPath, err := filepath.Abs(filepath.Join(storagePath, VideoName))
+    if err != nil {
+        return "", fmt.Errorf("failed to get absolute video path: %w", err)
+    }
 
-	// run the ffmpeg command to fragment the video and save it in the folder already created for later uploading to s3
-	cmd := exec.Command("ffmpeg", "-i", videoPath, "-c", "copy", "-start_number", "0", "-hls_time", "10", "-hls_list_size", "0", "-f", "hls", saveFormatedPath)
+    log.Printf("Formatted video path: %s", absOutputPath)
+    log.Printf("Original video path: %s", absVideoPath)
 
-	err = cmd.Run()
-	if err != nil {
-		return "", fmt.Errorf("error when executing the ffmpeg command: %w", err)
-	}
+    // Check if the file exists and is accessible
+    if err := checkFile(absVideoPath); err != nil {
+        return "", fmt.Errorf("error checking input file: %w", err)
+    }
 
-	ffmpegFilesPath := saveFormatedVideoPath + stringName[0]
-	
-	return ffmpegFilesPath, nil
+	// Run the ffmpeg command
+    cmd := exec.Command("ffmpeg", "-i", absVideoPath, "-c", "copy", "-start_number", "0", "-hls_time", "10", "-hls_list_size", "0", "-f", "hls", absOutputPath)
+    log.Printf("Executing ffmpeg command: %v", cmd.Args)
+
+    var out bytes.Buffer
+    var stderr bytes.Buffer
+    cmd.Stdout = &out
+    cmd.Stderr = &stderr
+
+    err = cmd.Run()
+    if err != nil {
+        log.Printf("Error executing ffmpeg command: %v", err)
+        log.Printf("FFmpeg stdout:\n%s", out.String())
+        log.Printf("FFmpeg stderr:\n%s", stderr.String())
+        return "", fmt.Errorf("error when executing the ffmpeg command: %w\nstdout: %s\nstderr: %s", err, out.String(), stderr.String())
+    }
+    
+    log.Printf("FFmpeg execution successful. stdout:\n%s", out.String())
+    log.Printf("FFmpeg execution successful. stderr:\n%s", stderr.String())
+
+    return outputPath, nil
 
 }
 
@@ -218,4 +264,16 @@ func SaveThumbnail(videoPath string, folderPath string) (string, error) {
     }
 
     return thumbnailPath, nil
+}
+
+// Helper function
+func checkFile(filePath string) error {
+    _, err := os.Stat(filePath)
+    if err != nil {
+        if os.IsNotExist(err) {
+            return fmt.Errorf("file does not exist: %s", filePath)
+        }
+        return fmt.Errorf("unable to access file: %s", filePath)
+    }
+    return nil
 }

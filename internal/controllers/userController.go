@@ -32,12 +32,16 @@ type UserController interface {
 // @Router 			/users/id/{UserId} [get]
 func (controller *UserControllerImp) GetUserByID(c *gin.Context) {
 	Id := c.Param("id")
-	users, err := controller.service.GetUserByID(Id)
+	user, err := controller.service.GetUserByID(Id)
 	if err != nil {
 		c.JSON(404, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, users)
+	c.JSON(200, gin.H{
+		"id": user.Id,
+		"username": user.Username,
+		"email": user.Email,
+	})
 }
 
 // GetUserByUserName		godoc

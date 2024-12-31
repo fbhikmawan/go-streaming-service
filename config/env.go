@@ -58,7 +58,7 @@ func GetConfig() *Config {
 
 			DOCKER_MODE: getEnvAsBool("DOCKER_MODE", false),
 
-			PostgresHost: getEnv("POSTGRES_HOST", "localhost"),
+			PostgresHost: getEnv("DB_HOST", "localhost"),
 			PostgresPort: getEnv("POSTGRES_PORT", "5432"),
 			PostgresUser: getEnv("POSTGRES_USER", "postgres"),
 			PostgresPassword: getEnv("POSTGRES_PASSWORD", "postgres"),
